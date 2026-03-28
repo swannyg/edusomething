@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Edu[Something] — Educational Tools That Actually Think</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --cream: #F5F0E8;
+    --warm-white: #FDFAF4;
+    --ink: #1C1917;
+    --ink-light: #44403C;
+    --terracotta: #C4622D;
+    --terracotta-light: #E8845A;
+    --sage: #5C7A6B;
+    --sage-light: #E8F0EC;
+    --gold: #B8954A;
+    --border: rgba(28,25,23,0.12);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--warm-white);
+    color: var(--ink);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  /* ── NOISE TEXTURE OVERLAY ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 1000;
+    opacity: 0.4;
+  }
+
+  /* ── NAVIGATION ── */
+  nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    padding: 1.25rem 2.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(253,250,244,0.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .nav-logo {
+    font-family: 'Lora', serif;
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: var(--ink);
+    text-decoration: none;
+    letter-spacing: -0.02em;
+  }
+
+  .nav-logo .bracket {
+    color: var(--terracotta);
+    font-style: italic;
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 2rem;
+    list-style: none;
+  }
+
+  .nav-links a {
+    font-size: 0.85rem;
+    font-weight: 400;
+    color: var(--ink-light);
+    text-decoration: none;
+    letter-spacing: 0.02em;
+    transition: color 0.2s;
+  }
+
+  .nav-links a:hover { color: var(--terracotta); }
+
+  /* ── HERO ── */
+  .hero {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 7rem 2.5rem 1.5rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-bg-circle {
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+  }
+
+  .hero-bg-circle-1 {
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(196,98,45,0.08) 0%, transparent 70%);
+    top: -100px;
+    right: -100px;
+    animation: drift 12s ease-in-out infinite alternate;
+  }
+
+  .hero-bg-circle-2 {
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(circle, rgba(92,122,107,0.07) 0%, transparent 70%);
+    bottom: 50px;
+    left: -80px;
+    animation: drift 15s ease-in-out infinite alternate-reverse;
+  }
+
+  @keyframes drift {
+    from { transform: translate(0, 0) scale(1); }
+    to { transform: translate(20px, 15px) scale(1.05); }
+  }
+
+  .hero-eyebrow {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.75rem;
+    letter-spacing: 0.15em;
+    color: var(--terracotta);
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.2s forwards;
+  }
+
+  .hero-title {
+    font-family: 'Lora', serif;
+    font-size: clamp(3.5rem, 8vw, 7rem);
+    font-weight: 700;
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+    max-width: 16ch;
+    margin-bottom: 2rem;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.4s forwards;
+  }
+
+  .hero-title .word-something {
+    color: var(--terracotta);
+    font-style: italic;
+    position: relative;
+    display: inline-block;
+  }
+
+  /* Cycling buzzwords */
+  .buzzword-wrap {
+    display: inline-block;
+    overflow: hidden;
+    vertical-align: bottom;
+    height: 1.05em;
+    line-height: 1.05;
+  }
+
+  .buzzword-inner {
+    display: flex;
+    flex-direction: column;
+    animation: cycleBuzz 9s ease-in-out infinite;
+  }
+
+  .buzzword-inner span {
+    display: block;
+    height: 1.05em;
+    line-height: 1.05;
+  }
+
+  @keyframes cycleBuzz {
+    0%,15%   { transform: translateY(0); }
+    20%,35%  { transform: translateY(-1.05em); }
+    40%,55%  { transform: translateY(-2.1em); }
+    60%,75%  { transform: translateY(-3.15em); }
+    80%,95%  { transform: translateY(-4.2em); }
+    100%     { transform: translateY(-5.25em); }
+  }
+
+  .hero-subtitle {
+    font-size: clamp(1rem, 2vw, 1.2rem);
+    color: var(--ink-light);
+    max-width: 52ch;
+    margin-bottom: 0;
+    line-height: 1.8;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.6s forwards;
+  }
+
+  .hero-subtitle em {
+    color: var(--ink);
+    font-style: normal;
+    font-weight: 500;
+  }
+
+  .hero-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: var(--ink);
+    color: var(--warm-white);
+    text-decoration: none;
+    padding: 1rem 2rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    transition: background 0.2s, transform 0.2s;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.8s forwards;
+  }
+
+  .hero-cta:hover {
+    background: var(--terracotta);
+    transform: translateY(-2px);
+  }
+
+  .hero-cta svg {
+    transition: transform 0.2s;
+  }
+
+  .hero-cta:hover svg {
+    transform: translateX(4px);
+  }
+
+  .hero-scroll-hint {
+    position: absolute;
+    bottom: 2.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    color: var(--ink-light);
+    opacity: 0.5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    animation: fadeUp 1s 1.2s forwards, bobble 2s 2s ease-in-out infinite;
+    opacity: 0;
+  }
+
+  @keyframes bobble {
+    0%, 100% { transform: translateX(-50%) translateY(0); }
+    50% { transform: translateX(-50%) translateY(5px); }
+  }
+
+  .scroll-line {
+    width: 1px;
+    height: 40px;
+    background: linear-gradient(to bottom, var(--ink-light), transparent);
+  }
+
+  /* ── MANIFESTO STRIP ── */
+  .manifesto {
+    background: var(--ink);
+    color: var(--cream);
+    padding: 4rem 2.5rem;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .manifesto-inner {
+    max-width: 900px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 3rem;
+    align-items: start;
+  }
+
+  .manifesto-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    color: var(--terracotta-light);
+    text-transform: uppercase;
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    align-self: center;
+  }
+
+  .manifesto-text {
+    font-family: 'Lora', serif;
+    font-size: clamp(1.1rem, 2.5vw, 1.5rem);
+    line-height: 1.8;
+    font-weight: 400;
+  }
+
+  .manifesto-text strong {
+    color: var(--terracotta-light);
+    font-weight: 600;
+  }
+
+  /* ── TOOLS SECTION ── */
+  .tools {
+    padding: 1.5rem 2.5rem 6rem;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: baseline;
+    gap: 1.5rem;
+    margin-bottom: 4rem;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 1.5rem;
+  }
+
+  .section-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    color: var(--terracotta);
+    text-transform: uppercase;
+  }
+
+  .section-title {
+    font-family: 'Lora', serif;
+    font-size: clamp(1.5rem, 3vw, 2.2rem);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+
+  .tools-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5px;
+    background: var(--border);
+    border: 1px solid var(--border);
+  }
+
+  .tool-card {
+    background: var(--warm-white);
+    padding: 2.5rem;
+    position: relative;
+    overflow: hidden;
+    transition: background 0.3s;
+    cursor: default;
+  }
+
+  .tool-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--terracotta);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.4s ease;
+  }
+
+  .tool-card:hover::before { transform: scaleX(1); }
+  .tool-card:hover { background: var(--cream); }
+
+  .tool-number {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--terracotta);
+    letter-spacing: 0.1em;
+    margin-bottom: 1.5rem;
+    opacity: 0.7;
+  }
+
+  .tool-icon {
+    width: 44px;
+    height: 44px;
+    background: var(--sage-light);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1.25rem;
+    font-size: 1.2rem;
+  }
+
+  .tool-name {
+    font-family: 'Lora', serif;
+    font-size: 1.2rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin-bottom: 0.75rem;
+    line-height: 1.3;
+  }
+
+  .tool-theory {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.05em;
+    color: var(--terracotta);
+    margin-bottom: 0.75rem;
+    text-transform: uppercase;
+  }
+
+  .tool-desc {
+    font-size: 0.88rem;
+    color: var(--ink-light);
+    line-height: 1.7;
+    margin-bottom: 2rem;
+  }
+
+  .tool-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.05em;
+    color: var(--sage);
+    text-transform: uppercase;
+  }
+
+  .tool-status.coming-soon { color: var(--gold); opacity: 0.7; }
+
+  .status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  .tool-status.coming-soon .status-dot { animation: none; }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.8); }
+  }
+
+  /* ── ABOUT / PHILOSOPHY ── */
+  .about {
+    background: var(--cream);
+    padding: 6rem 2.5rem;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .about-inner {
+    max-width: 700px;
+    margin: 0 auto;
+  }
+
+  .about-title {
+    font-family: 'Lora', serif;
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    letter-spacing: -0.02em;
+  }
+
+  .about-body {
+    font-size: 1rem;
+    color: var(--ink-light);
+    line-height: 1.9;
+  }
+
+  .about-body p + p { margin-top: 1.25rem; }
+
+  .about-body strong {
+    color: var(--ink);
+    font-weight: 500;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    padding: 3rem 2.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .footer-logo {
+    font-family: 'Lora', serif;
+    font-weight: 700;
+    font-size: 1rem;
+    letter-spacing: -0.02em;
+  }
+
+  .footer-logo .bracket { color: var(--terracotta); font-style: italic; }
+
+  .footer-note {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.05em;
+    color: var(--ink-light);
+    opacity: 0.5;
+  }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .reveal {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 640px) {
+    nav { padding: 1rem 1.25rem; }
+    .nav-links { display: none; }
+    .hero { padding: 7rem 1.25rem 4rem; }
+    .tools { padding: 4rem 1.25rem; }
+    .about { padding: 4rem 1.25rem; }
+    footer { padding: 2rem 1.25rem; }
+    .manifesto-inner { grid-template-columns: 1fr; gap: 1rem; }
+    .manifesto-label { writing-mode: horizontal-tb; transform: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a class="nav-logo" href="#">Edu<span class="bracket">[Something]</span></a>
+  <ul class="nav-links">
+    <li><a href="#tools">Tools</a></li>
+    <li><a href="#about">About</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg-circle hero-bg-circle-1"></div>
+  <div class="hero-bg-circle hero-bg-circle-2"></div>
+
+  <h1 class="hero-title">
+    Edu<span class="word-something"><span class="bracket">[</span><span class="buzzword-wrap"><span class="buzzword-inner">
+      <span>Synergy</span>
+      <span>Disruption</span>
+      <span>Innovation</span>
+      <span>Excellence</span>
+      <span>Impact</span>
+      <span>Synergy</span>
+    </span></span><span class="bracket">]</span></span>
+  </h1>
+
+  <p class="hero-subtitle">
+    A collection of tools and resources inspired by educational theories for research, exploration and practice.
+  </p>
+
+
+</section>
+
+<!-- TOOLS -->
+<section class="tools" id="tools">
+  <div class="section-header reveal">
+    <span class="section-label">01</span>
+    <h2 class="section-title">The tools</h2>
+  </div>
+
+  <div class="tools-grid">
+
+    <!-- Tool 1: Carta Educationis -->
+    <div class="tool-card reveal">
+      <div class="tool-number">001</div>
+      <div class="tool-icon">🗺️</div>
+      <div class="tool-theory">History of Education</div>
+      <h3 class="tool-name">Carta Educationis</h3>
+      <p class="tool-desc">Explore the education systems and learning traditions of the world through history.</p>
+      <span class="tool-status coming-soon">
+        <span class="status-dot"></span>
+        Coming soon
+      </span>
+    </div>
+
+    <!-- Tool 2: Magistri -->
+    <div class="tool-card reveal">
+      <div class="tool-number">002</div>
+      <div class="tool-icon">🏛️</div>
+      <div class="tool-theory">History of Education</div>
+      <h3 class="tool-name">Magistri</h3>
+      <p class="tool-desc">Travel through time and the evolution of educational thought with history's most influential thinkers.</p>
+      <span class="tool-status coming-soon">
+        <span class="status-dot"></span>
+        Coming soon
+      </span>
+    </div>
+
+    <!-- Tool 3: EduCART -->
+    <div class="tool-card reveal">
+      <div class="tool-number">003</div>
+      <div class="tool-icon">📊</div>
+      <div class="tool-theory">Educational Data Analysis</div>
+      <h3 class="tool-name">EduCART</h3>
+      <p class="tool-desc">Upload educational datasets, explore and interpret the relationships between variables with decision trees.</p>
+      <span class="tool-status coming-soon">
+        <span class="status-dot"></span>
+        Coming soon
+      </span>
+    </div>
+
+    <!-- Tool 4: Intelligent Reading -->
+    <div class="tool-card reveal">
+      <div class="tool-number">004</div>
+      <div class="tool-icon">📖</div>
+      <div class="tool-theory">Second Language Reading</div>
+      <h3 class="tool-name">Intelligent Reading</h3>
+      <p class="tool-desc">Personalise cognitive support in second language reading with space and annotations.</p>
+      <span class="tool-status coming-soon">
+        <span class="status-dot"></span>
+        Coming soon
+      </span>
+    </div>
+
+    <!-- Tool 5: Learning Design Studio -->
+    <div class="tool-card reveal">
+      <div class="tool-number">005</div>
+      <div class="tool-icon">✏️</div>
+      <div class="tool-theory">Learning Design</div>
+      <h3 class="tool-name">Learning Design Studio</h3>
+      <p class="tool-desc">Design your courses by filling in a form and edit the outputs to shape it.</p>
+      <span class="tool-status coming-soon">
+        <span class="status-dot"></span>
+        Coming soon
+      </span>
+    </div>
+
+    <!-- Tool 6: Episteme -->
+    <div class="tool-card reveal">
+      <div class="tool-number">006</div>
+      <div class="tool-icon">🌐</div>
+      <div class="tool-theory">Cultural Literacy</div>
+      <h3 class="tool-name">Episteme</h3>
+      <p class="tool-desc">Explore any concept through its definition, examples and connections to others.</p>
+      <span class="tool-status coming-soon">
+        <span class="status-dot"></span>
+        Coming soon
+      </span>
+    </div>
+
+    <!-- Tool 7: CogLoadBot -->
+    <div class="tool-card reveal">
+      <div class="tool-number">007</div>
+      <div class="tool-icon">🧠</div>
+      <div class="tool-theory">Cognitive Load Theory</div>
+      <h3 class="tool-name">CogLoadBot</h3>
+      <p class="tool-desc">Summarise given text to novice and proficient levels or expert thought provocations.</p>
+      <span class="tool-status coming-soon">
+        <span class="status-dot"></span>
+        Coming soon
+      </span>
+    </div>
+
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section class="about" id="about">
+  <div class="about-inner">
+    <div class="section-header reveal">
+      <span class="section-label">02</span>
+      <h2 class="section-title">About this project</h2>
+    </div>
+    <div class="about-body reveal">
+      <p>
+        This is an ongoing project bringing together educationalists and technologists to explore educational theories and methods to see where the affordances of technology are genuinely beneficial and adoptable.
+      </p>
+      <p>
+        Each tool is built around a specific idea from educational research and tries to make that idea genuinely useful in practice.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">Edu<span class="bracket">[Something]</span></div>
+
+</footer>
+
+<script>
+  // Scroll reveal
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry, i) => {
+      if (entry.isIntersecting) {
+        setTimeout(() => entry.target.classList.add('visible'), i * 80);
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1 });
+  reveals.forEach(el => observer.observe(el));
+</script>
+
+</body>
+</html>
