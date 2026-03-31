@@ -52,8 +52,6 @@ html,body { width:100%;height:100%;overflow:hidden;background:var(--bg); }
 .load-bar   { width:160px;height:1px;background:rgba(200,168,75,.12);margin:16px auto 0;overflow:hidden; }
 .load-bar-fill { height:100%;background:var(--gold);animation:lb 1.8s ease-in-out infinite; }
 @keyframes lb { 0%{width:0%;margin-left:0%}50%{width:60%;margin-left:20%}100%{width:0%;margin-left:100%} }
-
-/* EDU CARD */
 #edu-card { position:absolute;top:64px;right:16px;width:310px;background:var(--card-bg);border:1px solid var(--border);z-index:25;opacity:0;transform:translateX(12px);transition:opacity .28s,transform .28s;pointer-events:none;backdrop-filter:blur(18px);max-height:calc(100vh - 185px);display:flex;flex-direction:column;overflow:hidden; }
 #edu-card::before { content:'';display:block;height:2px;background:linear-gradient(to right,transparent,var(--gold),transparent); }
 #edu-card.show { opacity:1;transform:translateX(0);pointer-events:auto; }
@@ -76,8 +74,6 @@ html,body { width:100%;height:100%;overflow:hidden;background:var(--bg); }
 .ctab  { flex:1;padding:7px 4px;font-family:'Cinzel',serif;font-size:.52rem;letter-spacing:.14em;text-transform:uppercase;background:none;border:none;color:var(--parch-d);cursor:pointer;transition:all .18s; }
 .ctab.on { color:var(--gold);background:rgba(200,168,75,.07); }
 .ccontent { padding:10px 16px;font-family:'EB Garamond',serif;font-size:.865rem;color:var(--text);line-height:1.55;border-bottom:1px solid rgba(200,168,75,.055); }
-
-/* TIMELINE */
 #timeline { height:100px;z-index:20;position:relative;background:linear-gradient(to top,rgba(4,6,12,.98) 0%,rgba(4,6,12,.78) 70%,transparent 100%);border-top:1px solid var(--border);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;padding:0 72px 14px; }
 #era-name    { font-family:'EB Garamond',serif;font-style:italic;font-size:.66rem;color:rgba(168,148,96,.45);letter-spacing:.16em;pointer-events:none; }
 #year-display{ font-family:'Cinzel',serif;font-size:1.6rem;font-weight:600;color:var(--gold);letter-spacing:.1em;text-shadow:0 0 28px var(--gold-glow);min-width:175px;text-align:center;line-height:1; }
@@ -95,7 +91,6 @@ html,body { width:100%;height:100%;overflow:hidden;background:var(--bg); }
 </head>
 <body>
 <div id="app">
-
   <div id="map-wrap">
     <svg id="map"></svg>
     <div id="map-load"><div style="text-align:center">
@@ -182,7 +177,6 @@ let curYear=MIN_YR, lastMapYear=null;
 let geoCache={}, eduCache={}, colorCache={};
 let dragging=false, loadTimer=null, colData=null;
 
-// ── UTILS ────────────────────────────────────────────────────────────────────
 function yrLabel(yr) { return yr<=0?`${Math.abs(yr)||1} BC`:`${yr} AD`; }
 function nearestYr(yr){ return HIST_YRS.reduce((p,c)=>Math.abs(c-yr)<Math.abs(p-yr)?c:p); }
 function getEra(yr)  { return (ERAS.find(e=>yr>=e.s&&yr<e.e)||ERAS[ERAS.length-1]).n; }
@@ -203,7 +197,6 @@ function getName(d) {
   return (id&&ISO[id])?ISO[id]:'Unknown Region';
 }
 
-// ── D3 MAP ───────────────────────────────────────────────────────────────────
 const W=window.innerWidth, H=window.innerHeight-100;
 const svg=d3.select('#map').attr('width',W).attr('height',H).attr('viewBox',`0 0 ${W} ${H}`);
 const proj=d3.geoNaturalEarth1().scale(W/6.3).translate([W/2,H/2]);
@@ -218,7 +211,6 @@ const zoom=d3.zoom().scaleExtent([1,14]).on('zoom',evt=>{
 });
 svg.call(zoom);
 
-// ── GEO FETCH ────────────────────────────────────────────────────────────────
 async function loadFallback() {
   if(geoCache.__fb) return geoCache.__fb;
   const r=await fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json');
@@ -241,7 +233,6 @@ async function fetchGeo(yr) {
   return geoCache.__fb||null;
 }
 
-// ── RENDER ───────────────────────────────────────────────────────────────────
 function renderGeo(geo) {
   if(!geo?.features) return;
   gLand.selectAll('.land').remove();
@@ -252,7 +243,6 @@ function renderGeo(geo) {
     .transition().duration(650).ease(d3.easeCubicInOut).style('opacity',1);
 }
 
-// ── INTERACTION ──────────────────────────────────────────────────────────────
 const tip=document.getElementById('tip');
 function onHover(evt,d) {
   const n=getName(d); if(n==='Unknown Region') return;
@@ -269,7 +259,6 @@ function onClick(evt,d) {
 }
 svg.on('click',()=>closeCard());
 
-// ── EDU CARD ─────────────────────────────────────────────────────────────────
 const card=document.getElementById('edu-card');
 const cRegion=document.getElementById('card-region');
 const cPeriod=document.getElementById('card-period');
@@ -284,115 +273,7 @@ function showCard(name,yr) {
   callAPI(name,yr,label,key);
 }
 
-// ── OFFLINE DATASET ───────────────────────────────────────────────────────────
-const OFFLINE = [
-  // ── EGYPT ──
-  { r:['egypt','kemet'], y:[-2000,-500], d:{ region:'Ancient Egypt', period:'New Kingdom & Third Intermediate Period', access:'Scribal schools (Houses of Instruction) admitted boys of elite families; girls and commoners largely excluded. Royal and priestly sons had the most privileged access.', curriculum:'Hieroglyphic writing, mathematics, religious texts, medical knowledge, and administrative record-keeping. Copying of canonical texts such as the Book of the Dead and Kemyt was central.', institutions:'Per-ankh (Houses of Life) attached to temples; the scribal school at Deir el-Medina served artisans of the royal necropolis. The sage Amenemope composed influential wisdom texts.', literacy:'Estimated 1–3% of the population were literate. Perhaps a few thousand active scribes supported the state apparatus at any given time.' }},
-  { r:['egypt'], y:[-500,700], d:{ region:'Ptolemaic / Roman Egypt', period:'Hellenistic and Roman period', access:'Greek-speaking elite males attended gymnasia; Egyptian priestly education continued in temples for a small priestly caste. Women of wealthy families could receive private tuition.', curriculum:'Greek gymnasium curriculum: rhetoric, philosophy, mathematics, athletics. Demotic Egyptian tradition continued alongside in temple schools covering ritual, astronomy and medicine.', institutions:'The Library and Mouseion of Alexandria drew scholars from across the Mediterranean. Temple schools at Memphis and Karnak maintained hieroglyphic and Demotic traditions.', literacy:'Greek literacy perhaps 15–20% among urban males; Egyptian hieroglyphic literacy under 1%. A bilingual scribal class bridged the two worlds.' }},
-  { r:['egypt'], y:[700,1800], d:{ region:'Egypt under Islamic Rule', period:'Abbasid to Ottoman Egypt', access:'Boys of all classes could attend mosque schools (kuttab); girls rarely received formal schooling. Advanced study open to males who could afford to travel to Al-Azhar.', curriculum:'Quranic memorisation, Arabic grammar, Islamic jurisprudence (fiqh), hadith, arithmetic and sometimes astronomy at higher levels.', institutions:"Al-Azhar Mosque (founded 970 CE) became the world's foremost centre of Islamic learning, attracting students from across the Muslim world.", literacy:'Functional Quranic literacy perhaps 10–20% among urban males. Rural literacy considerably lower.' }},
-
-  // ── MESOPOTAMIA / IRAQ ──
-  { r:['mesopotamia','sumer','babylon','akkad','assyria','iraq'], y:[-2000,-300], d:{ region:'Mesopotamia (Old Babylonian / Assyrian Period)', period:'Bronze and Iron Age Mesopotamia', access:'The edubba (tablet house) admitted sons of scribes, merchants and officials almost exclusively. Girls were very rarely educated formally though a few female scribes are attested.', curriculum:'Cuneiform writing, Sumerian language (even after it ceased to be spoken), mathematics including multiplication tables and geometry, law codes, divination, and hymns.', institutions:'The edubba schools of Nippur and Babylon are the best attested. The "Schooldays" text provides a vivid account of daily school life. Libraries at Nineveh under Ashurbanipal preserved thousands of tablets.', literacy:'Roughly 1–2% of the population were functionally literate in cuneiform. The script\'s complexity made full literacy a specialist achievement.' }},
-
-  // ── PERSIA / IRAN ──
-  { r:['persia','iran','achaemenid','parthia','sassanid','safavid'], y:[-600,600], d:{ region:'Persian Empire (Achaemenid–Sassanid)', period:'Iron Age to Late Antiquity', access:'Zoroastrian priestly education was restricted to males of the priestly caste (Magi). Noble boys received courtly education; commoners had no formal schooling.', curriculum:'The Avesta and Zoroastrian scripture, astronomy, medicine (especially at the Academy of Gondishapur), royal administration, horsemanship and martial arts for the nobility.', institutions:'The Academy of Gondishapur (founded c. 3rd century CE) was one of the most significant centres of learning in the ancient world, translating Greek and Indian scientific texts.', literacy:'Very low overall; literacy was largely restricted to the priestly and administrative classes. Aramaic served as the lingua franca of administration.' }},
-  { r:['iran','persia'], y:[600,1800], d:{ region:'Islamic Persia', period:'Abbasid to Safavid Period', access:'Boys of means could attend maktab (elementary) schools; advanced madrasa education was open to male students of demonstrated ability regardless of class.', curriculum:'Quran, Persian and Arabic literature, philosophy, mathematics, and the sciences. Persian became a major literary and scholarly language alongside Arabic.', institutions:'Madrasas funded by waqf (endowments); the Nizamiyya schools founded by Nizam al-Mulk in the 11th century were the most prestigious. Scholars such as Avicenna and Al-Biruni emerged from this tradition.', literacy:'Urban male literacy perhaps 15–25%. The Persian literary tradition produced extraordinarily high cultural output relative to literacy rates.' }},
-
-  // ── GREECE ──
-  { r:['greece','athens','sparta','macedon','hellas'], y:[-800,100], d:{ region:'Classical & Hellenistic Greece', period:'Archaic to Hellenistic Period', access:'Free citizen males received education; enslaved people and women were excluded from formal schooling, though wealthy women could receive private instruction. Sparta educated girls in physical training.', curriculum:'Athens: reading, writing, arithmetic, music, gymnastics, and rhetoric. Higher education included philosophy and the arts. Sparta: military training, discipline, and civic virtue above all.', institutions:'Plato\'s Academy (387 BCE), Aristotle\'s Lyceum (335 BCE), and the gymnasium were the great institutions. The sophists offered paid instruction in rhetoric to those who could afford it.', literacy:'Perhaps 10–30% of free adult males in Athens were literate; far less across the broader Greek world. Athens was unusually literate by ancient standards.' }},
-
-  // ── ROME / ITALY ──
-  { r:['rome','roman','italy','italia'], y:[-300,500], d:{ region:'Roman Republic & Empire', period:'Classical Rome', access:'Boys of citizen families attended ludus (primary) and grammaticus (secondary) schools. Elite males proceeded to rhetoric schools. Girls of wealthy families could be privately educated; enslaved people were sometimes educated as tutors.', curriculum:'Latin and Greek literacy, rhetoric, grammar, law, and philosophy. The seven liberal arts (grammar, rhetoric, logic, arithmetic, geometry, music, astronomy) formed the ideal curriculum.', institutions:'Schools of rhetoric in Rome, Carthage, and Beirut; the great libraries of Rome. Quintilian\'s Institutio Oratoria was the foundational pedagogical text.', literacy:'Perhaps 20–30% of urban adult males in Rome itself; much lower across the provinces and among women. A higher literacy rate than most ancient societies.' }},
-
-  // ── BYZANTINE / TURKEY ──
-  { r:['byzantine','byzantium','turkey','anatolia','ottoman'], y:[300,1100], d:{ region:'Byzantine Empire', period:'Early to Middle Byzantine Period', access:'Boys of the urban professional class attended schools; the imperial civil service required educated men. Monastic education was open to men of any background. Girls rarely received formal schooling.', curriculum:'Classical Greek grammar and rhetoric remained central, alongside Christian theology. The curriculum preserved and transmitted ancient Greek texts throughout the medieval period.', institutions:'The University of Constantinople (founded 425 CE) and later reorganised under Constantine IX. Patriarchal schools trained clergy. Monastic scriptoria preserved classical manuscripts.', literacy:'Estimated 10–20% literacy among urban males; higher in Constantinople. Byzantine scholarship preserved much of the ancient Greek intellectual tradition.' }},
-  { r:['ottoman','turkey'], y:[1300,1920], d:{ region:'Ottoman Empire', period:'Rise to decline of the Ottoman state', access:'Boys attended mekteb (Quran schools) freely; elite sons entered the palace school (Enderun). The devshirme system educated selected Christian boys for imperial service. Girls were educated within the household.', curriculum:'Quran, Islamic law, Arabic and Ottoman Turkish, mathematics and astronomy in advanced schools. The Enderun palace school added military arts, music, and statecraft.', institutions:'The Süleymaniye complex in Istanbul housed mosques, madrasas, a hospital and library. By the 19th century Tanzimat reforms introduced secular schools (rüşdiye and idadiye).', literacy:'Estimated 2–5% in early centuries; rising to perhaps 10–15% by the 19th century as secular schools spread.' }},
-
-  // ── CHINA ──
-  { r:['china','han','tang','song','ming','qing','zhou','qin'], y:[-500,600], d:{ region:'Han Dynasty China', period:'Classical & Han Imperial China', access:'The imperial examination system (keju) was theoretically open to all males but in practice favoured those wealthy enough to study for years. Women were excluded from examinations entirely.', curriculum:'The Five Classics (I Ching, Book of Songs, etc.) and Confucian Analects were the core texts. Calligraphy, poetry composition, history, and ritual were also central.', institutions:'The Imperial Academy (Taixue, founded 124 BCE) enrolled thousands of students. Private academies (shuyuan) proliferated. Confucius himself is the foundational figure of Chinese pedagogy.', literacy:'Perhaps 5–10% of the total population; higher among urban males. The scholar-gentry class maintained a near-monopoly on literacy for centuries.' }},
-  { r:['china','tang','song'], y:[600,1300], d:{ region:'Tang and Song Dynasty China', period:'Golden Age of Chinese civilisation', access:'The examination system was significantly expanded under the Tang and Song, drawing more candidates from the lesser gentry. Women remained excluded from formal public education.', curriculum:'Neo-Confucian philosophy (codified by Zhu Xi), poetry, calligraphy, history, and the Classics. Printing (invented in China) dramatically increased access to texts.', institutions:'The Imperial Academy, thousands of private shuyuan academies, and Buddhist monasteries as centres of literacy. Woodblock printing from the 7th century transformed book availability.', literacy:'Perhaps 10–20% among urban males in Song China — unusually high for a pre-modern society, partly due to cheap printed books.' }},
-  { r:['china','ming','qing'], y:[1300,1912], d:{ region:'Ming and Qing Dynasty China', period:'Late Imperial China', access:'The examination system continued to offer theoretical meritocratic access but in practice favoured those with years of private tutoring. Women had no access to state examinations; some elite women were privately educated.', curriculum:'The Eight-legged Essay (baguwen) format dominated examination preparation. Neo-Confucian classics, history, calligraphy, and poetry. Practical and scientific subjects were largely neglected.', institutions:'Thousands of shuyuan academies; the National Academy in Beijing. Jesuit missionaries introduced Western mathematics and astronomy at court. The examination system was finally abolished in 1905.', literacy:'Perhaps 30–45% of adult males by the late Qing, with significant rural–urban disparity. Female literacy very low except among elite families.' }},
-
-  // ── INDIA ──
-  { r:['india','maurya','gupta','mughal','delhi'], y:[-2000,600], d:{ region:'Ancient India (Vedic to Gupta Period)', period:'Vedic Age through the Gupta Golden Age', access:'The gurukul system required a student (shishya) to live with a teacher (guru). Access was structured by varna (caste): Brahmins received the fullest education; Shudras were largely excluded. Women were educated in some early Vedic traditions but increasingly excluded over time.', curriculum:'The Vedas, Upanishads, Sanskrit grammar (Panini\'s Ashtadhyayi), mathematics, astronomy (Aryabhata\'s contributions), medicine (Ayurveda), logic and philosophy.', institutions:'Taxila (Takshashila) and Nalanda were among the world\'s earliest universities, drawing students from China, Central Asia, and the Middle East. Nalanda at its peak housed over 10,000 students.', literacy:'Very low overall; literacy was concentrated among the Brahmin priestly class. Oral transmission of sacred texts was the primary educational method, not writing.' }},
-  { r:['india'], y:[1200,1750], d:{ region:'Sultanate and Mughal India', period:'Medieval Islamic India', access:'Maktab and madrasa education served Muslim boys; the traditional gurukul system continued for Hindus. Women of the Muslim elite could receive household education. The two systems largely coexisted without merging.', curriculum:'Muslims: Quran, Arabic and Persian literature, Islamic jurisprudence, mathematics. Hindus: Sanskrit texts, vedic ritual, mathematics, astronomy. Persian became the language of the Mughal court and administration.', institutions:'The Mughal court was a centre of scholarship; the Emperor Akbar commissioned major translations. Traditional Hindu pathshalas continued across the subcontinent alongside Islamic madrasas.', literacy:'Estimated 10–20% functional literacy among urban populations. Rural literacy much lower.' }},
-  { r:['india'], y:[1750,1947], d:{ region:'British India', period:'Colonial India', isColonial:true, indigenous:'Traditional gurukul and pathshala schools continued in villages teaching Sanskrit, arithmetic, and religious texts. Madrasa education served Muslim communities. These systems educated far more children than the colonial system initially did.', colonial:'The 1835 Macaulay Minute famously oriented British education toward producing English-speaking administrators. English-medium schools and universities (Calcutta, Bombay, Madras founded 1857) created a Western-educated elite. Mass education was largely neglected until the late colonial period.' }},
-
-  // ── JAPAN ──
-  { r:['japan'], y:[-500,1600], d:{ region:'Imperial and Medieval Japan', period:'Nara to Sengoku Period', access:'The Chinese-style university (Daigaku-ryō) served the sons of the court aristocracy. Buddhist monasteries provided literacy for clergy and occasionally commoners. Samurai education emphasised martial skills alongside some literacy.', curriculum:'Chinese Confucian classics, Chinese writing (kanji), Buddhist sutras, poetry, and court ritual. The kana syllabaries (hiragana, katakana) developed for Japanese vernacular writing.', institutions:'The Daigaku-ryō imperial university (founded 701 CE) trained court officials. Buddhist temples such as Kōfuku-ji and Enryaku-ji were major educational centres. Women of the court were often highly literate in Japanese kana.', literacy:'Perhaps 5–15% among aristocratic and urban males; broader literacy relatively limited. Court women were sometimes more literate in Japanese than men who prioritised Chinese.' }},
-  { r:['japan'], y:[1600,1868], d:{ region:'Edo-Period Japan (Tokugawa Shogunate)', period:'Edo Period', access:'The terakoya (temple schools) opened literacy to boys and girls across social classes — a remarkable feature by pre-modern standards. Samurai had their own domain schools (hanko). Commoners gained increasing access over the period.', curriculum:'Reading, writing, arithmetic (soroban abacus), calligraphy, and Confucian ethics. Samurai schools added Chinese classics, martial arts, and statecraft.', institutions:'By 1868 there were over 15,000 terakoya schools across Japan. The Shōheikō in Edo was the leading Confucian academy. Private rangaku (Dutch Learning) schools introduced Western science.', literacy:'By the late Edo period, male literacy was perhaps 40–50% and female literacy 15–20% — among the highest rates in the pre-industrial world.' }},
-
-  // ── ISLAMIC WORLD / ARABIA ──
-  { r:['arabia','saudi','caliphate','abbasid','umayyad','yemen'], y:[600,1500], d:{ region:'Islamic Caliphate (Umayyad–Abbasid)', period:'Golden Age of Islam', access:'Any free Muslim male could attend mosque schools and madrasas; the system was genuinely more open to talent across class than most contemporary systems. Women scholars existed but were uncommon; some hadith scholars were female.', curriculum:'Quran and hadith, Arabic grammar and rhetoric, Islamic jurisprudence, theology (kalam), mathematics, astronomy, medicine, and philosophy. Greek texts were translated into Arabic en masse.', institutions:'The House of Wisdom (Bayt al-Hikma) in Baghdad was the greatest scholarly institution of the medieval world. Al-Azhar (Cairo, 970 CE), the Nizamiyya schools, and thousands of local madrasas formed the network.', literacy:'Urban male literacy perhaps 20–30% across the Islamic heartlands — higher than contemporary Europe. The relatively accessible Arabic script supported wider literacy.' }},
-
-  // ── WEST AFRICA / MALI ──
-  { r:['mali','ghana','songhai','senegal','guinea','niger','burkina'], y:[800,1600], d:{ region:'Mali and Songhai Empires', period:'West African Islamic Medieval Period', access:'Islamic education through Quranic schools reached both urban and rural populations across the Sahel. Boys and girls learned Quran; advanced Islamic scholarship was largely male. Indigenous oral educational traditions ran in parallel.', curriculum:'Quranic memorisation, Arabic literacy, Islamic law and theology. Indigenous education covered farming, crafts, oral history, and governance through apprenticeship and initiation rites.', institutions:'Timbuktu was a major centre of Islamic scholarship with three great mosques (Sankore, Djinguereber, Sidi Yahia) functioning as universities. An estimated 25,000 students studied there at its peak.', literacy:'Quranic literacy widespread among males in cities; Arabic literacy for advanced scholars perhaps 5–10% of urban population. Indigenous knowledge transmitted orally.' }},
-
-  // ── EUROPE / MEDIEVAL ──
-  { r:['france','frankish','carolingian'], y:[500,1000], d:{ region:'Frankish Kingdom / Carolingian Empire', period:'Early Medieval Europe', access:'The Carolingian Renaissance under Charlemagne attempted to spread literacy among clergy and nobles. Cathedral and monastery schools served a tiny elite. The vast majority of the peasant population had no formal education.', curriculum:'The trivium (grammar, rhetoric, logic) and quadrivium (arithmetic, geometry, music, astronomy) based on classical models. Latin was the language of learning and the Church.', institutions:'The Palace School at Aachen under Alcuin of York; cathedral schools at Reims, Paris, and Chartres; Benedictine monasteries as centres of manuscript copying and learning.', literacy:'Perhaps 1–5% of the total population; higher among clergy. Charlemagne himself reportedly learned to read as an adult.' }},
-  { r:['france'], y:[1000,1600], d:{ region:'Kingdom of France', period:'High Medieval to Renaissance France', access:'Cathedral schools and early universities drew sons of the clergy, nobility, and emerging urban bourgeoisie. Girls were educated in convents or by private tutors in wealthy households.', curriculum:'Theology, law, medicine, and the seven liberal arts at university level. Elementary parish schools taught basic Latin literacy and catechism.', institutions:'The University of Paris (founded c. 1150) was the greatest centre of theological learning in Europe. The Sorbonne (1257) specialised in theology. Over 30 French cities had universities by 1500.', literacy:'Perhaps 5–10% total; rising to 20–30% in cities by 1500. The printing press arrived in France in 1470 and began to transform literacy.' }},
-  { r:['france'], y:[1600,1900], d:{ region:'Kingdom of France / French Republic', period:'Ancien Régime to Revolution', access:'Jesuit collèges educated sons of the nobility and bourgeoisie; parish schools served boys of modest means. The Revolution introduced the principle of universal public education. Napoleonic lycées standardised elite education.', curriculum:'Latin, rhetoric, philosophy, mathematics, and natural sciences in Jesuit colleges. The Enlightenment promoted reason, science, and civic education. Post-Revolution: republican values, French language, mathematics.', institutions:'The Collège de France (1530), Jesuit colleges across France, the École Polytechnique (1794) and the grandes écoles system established France\'s educational infrastructure.', literacy:'About 30% at the time of the Revolution; rising rapidly thereafter as the state expanded schooling.' }},
-  { r:['england','britain','united kingdom'], y:[500,1600], d:{ region:'England / Kingdom of Britain', period:'Anglo-Saxon to Tudor Period', access:'Monastic and cathedral schools served clergy and noble sons. Grammar schools (free for local boys in theory) spread from the 14th century. Girls of noble families received household education; most women were illiterate.', curriculum:'Latin grammar, theology, logic and rhetoric at school level; the seven liberal arts at Oxford and Cambridge. Vernacular literacy in English grew significantly after the 14th century.', institutions:'Oxford (c. 1096) and Cambridge (1209) were the two English universities. Winchester (1382) and Eton (1440) were among the first grammar schools. Monasteries were the main literate institutions before the Reformation.', literacy:'Perhaps 5% overall in 1400; rising to 20–30% among urban males by 1600 following the Reformation\'s emphasis on Bible reading.' }},
-  { r:['england','britain','united kingdom'], y:[1600,1900], d:{ region:'Britain (Stuart to Victorian)', period:'Early Modern to Industrial Britain', access:'Grammar schools and charity schools opened education to the middle classes. The Industrial Revolution created demand for basic literacy among workers. Sunday Schools reached the poor. Women\'s access to education was highly restricted until the late 19th century.', curriculum:'Classical languages in elite schools; reading, writing, arithmetic, and religion in charity and Sunday schools. The public school curriculum (Rugby, Eton) emphasised classics, character, and sport.', institutions:'The "public schools" (Eton, Harrow, Rugby), Dissenting academies, Oxford and Cambridge (reformed from the 1850s), and from 1870 universal elementary schools under the Forster Education Act.', literacy:'About 60% in 1800; rising to nearly universal basic literacy by 1900 following compulsory schooling laws.' }},
-
-  // ── GERMANY ──
-  { r:['germany','prussia','holy roman','saxon'], y:[1400,1900], d:{ region:'Germany / Prussia', period:'Reformation to Imperial Germany', access:'The Protestant Reformation made literacy a religious duty, dramatically expanding boys\' schooling. Prussia introduced compulsory education in 1763 — one of the first nations to do so. Girls\' schooling lagged but expanded through the 19th century.', curriculum:'Luther\'s catechism and Bible reading, Latin in grammar schools, and from the 18th century mathematics, natural sciences, and German history. The humanist Gymnasium emphasised classical languages.', institutions:'The University of Berlin (1810, founded by Humboldt) created the modern research university model. Prussia\'s Gymnasium and Volksschule systems became international models. Over 90% of children were in school by 1870.', literacy:'About 50% in 1800; nearly universal by 1870, the highest rate in Europe. Prussia\'s education system was widely admired and imitated.' }},
-
-  // ── SPAIN ──
-  { r:['spain','castile','aragon','iberia'], y:[700,1600], d:{ region:'Medieval Iberia / Spain', period:'Reconquista to Golden Age', access:'Christian cathedral schools and Islamic madrasas coexisted during the convivencia period. After the Reconquista, Jesuit colleges educated the Catholic elite. Jews maintained their own educational networks until the 1492 expulsion.', curriculum:'Toledo\'s translation school rendered Arabic and Greek texts into Latin, transmitting Islamic science to Europe. Catholic curriculum: Latin, theology, rhetoric. Jewish curriculum: Torah, Talmud, Hebrew.', institutions:'The University of Salamanca (1218) was one of Europe\'s oldest and most prestigious. The Toledo School of Translators was crucial to the transmission of classical and Islamic knowledge to Christian Europe.', literacy:'Perhaps 10–20% among urban males in the kingdom of Castile by 1500; lower in rural areas.' }},
-
-  // ── AZTEC / MEXICO ──
-  { r:['mexico','aztec','new spain'], y:[-500,1521], d:{ region:'Aztec Empire (Triple Alliance)', period:'Post-Classic Mesoamerica', access:'The telpochcalli (school of commoners) educated all boys regardless of class — unusually egalitarian for the ancient world. The calmecac trained priests and nobles in higher learning. Girls attended separate schools focused on weaving and household management.', curriculum:'History, astronomy, calendar keeping, warfare, agriculture, and music in the telpochcalli. The calmecac added ritual, astronomy, writing (pictographic), divination, and law.', institutions:'Every Aztec city-state had both telpochcalli and calmecac schools. Compulsory education for boys was law — making the Aztecs among the earliest to mandate universal male schooling.', literacy:'Pictographic script was readable by many; full scribal literacy was restricted to trained specialists, perhaps 5–10% of the population.' }},
-  { r:['mexico','new spain'], y:[1521,1820], d:{ region:'New Spain (Colonial Mexico)', period:'Spanish Colonial Mexico', isColonial:true, indigenous:'Aztec telpochcalli and calmecac schools were dismantled within decades of conquest. Indigenous knowledge — calendrics, astronomy, agriculture, oral history — survived through family transmission and some early Franciscan documentation, but the institutional system was destroyed.', colonial:'Franciscan, Dominican, and Jesuit missionaries established schools for Indigenous children to learn Spanish, Christian doctrine, and European crafts. The University of Mexico (1551) was the first in the Americas, though it served Spanish settlers and a small creole elite.' }},
-
-  // ── INCA / PERU ──
-  { r:['peru','inca'], y:[-500,1532], d:{ region:'Inca Empire (Tawantinsuyu)', period:'Late Horizon Andean Civilisation', access:'The yachayhuasi (houses of knowledge) in Cusco trained sons of the Inca nobility and curacas (local lords). Commoners received practical education through family and community. The acllahuasi educated chosen women (acllacuna) for religious and court service.', curriculum:'Quipu (knotted string record-keeping), oral history, astronomy, religion, administration, and military skills for the nobility. Practical agriculture, weaving, and crafts for commoners.', institutions:'The yachayhuasi in Cusco; the network of acllahuasi throughout the empire. The amautas (wise men) were the teachers and keepers of oral historical tradition.', literacy:'No writing system in the alphabetic sense; the quipu recorded numerical and possibly narrative information. All knowledge transmission was oral or through the quipu.' }},
-
-  // ── RUSSIA ──
-  { r:['russia','muscovy','soviet'], y:[900,1700], d:{ region:'Kievan Rus and Muscovite Russia', period:'Medieval Russia', access:'Orthodox monasteries provided education almost exclusively for clergy and the boyar nobility. Most of the population — serfs comprising the vast majority — had no formal education whatsoever.', curriculum:'Church Slavonic, theology, and Biblical texts. Latin was largely absent, setting Russia apart from Western European educational traditions. Mathematics and natural philosophy had little presence.', institutions:'The Kiev-Mohyla Academy (1632) was the first institution of higher learning in Eastern Slavic lands. Monasteries in Moscow, Novgorod, and Kiev maintained scriptoria and schools.', literacy:'Perhaps 1–3% of the total population; concentrated entirely in the clergy and upper nobility.' }},
-  { r:['russia','soviet'], y:[1700,1991], d:{ region:'Russian Empire / Soviet Union', period:'Imperial to Soviet Russia', access:'Peter the Great\'s reforms created secular technical schools for the nobility. The Soviet period (from 1917) made universal literacy a state priority, achieving near-universal literacy by 1940. Gender equality in education was a stated Soviet principle.', curriculum:'Imperial Russia: classical and military education for elites; religious basics for the few commoners in school. Soviet: Marxist-Leninist ideology, mathematics, sciences, technical skills, physical education.', institutions:'Moscow State University (1755); the vast Soviet network of comprehensive polytechnic schools (desyatiletka); specialised technical institutes (tekhnikumy). UNESCO praised Soviet literacy achievements.', literacy:'About 20% in 1900; 87% by 1939 and nearly universal by 1960 — one of history\'s fastest literacy expansions.' }},
-
-  // ── USA ──
-  { r:['united states','usa','america'], y:[1600,1865], d:{ region:'Colonial & Early United States', period:'Colonial to Antebellum America', access:'New England Puritans created the first public school system in the Western world (1647 "Old Deluder Satan" Act). Southern states had plantation-based private tutoring for white elites. Enslaved African Americans were legally prohibited from learning to read in many states.', curriculum:'Reading, writing, arithmetic, and Protestant Christian catechism at the elementary level. Harvard (1636) and other early colleges: theology, classical languages, law.', institutions:'Harvard (1636), William & Mary (1693), Yale (1701) were the first colleges. The one-room schoolhouse was the typical primary institution. Sunday schools reached the urban poor.', literacy:'Perhaps 60–70% among white adult males by 1800; very low among women and nearly non-existent among enslaved people by legal prohibition.' }},
-  { r:['united states','usa'], y:[1865,2024], d:{ region:'United States of America', period:'Reconstruction to Contemporary', access:'The post-Civil War period brought expanded schooling for Black Americans, though segregated until Brown v. Board of Education (1954). The GI Bill (1944) dramatically expanded university access. Title IX (1972) equalised female participation.', curriculum:'Progressive education reforms (Dewey) introduced child-centred learning. The 20th century added sciences and vocational training. The post-Sputnik era emphasised mathematics and science. Contemporary: STEM, standardised testing (No Child Left Behind 2001).', institutions:'The public school system, the Ivy League and land-grant universities (Morrill Act 1862), HBCUs (Historically Black Colleges and Universities), and the vast community college network.', literacy:'Near-universal basic literacy by 1900. The US had the world\'s highest university enrolment rate through much of the 20th century.' }},
-
-  // ── SUB-SAHARAN AFRICA ──
-  { r:['nigeria','ghana','benin','yoruba','igbo'], y:[-500,1800], d:{ region:'West African Kingdoms (Benin, Yoruba states)', period:'Pre-Colonial West Africa', access:'Education was primarily through apprenticeship, initiation rites, and oral transmission. Age-grade societies structured communal learning. Islamic education through Quranic schools reached the north of the region. Girls and boys received different but equally structured informal education.', curriculum:'Oral history, proverbs and philosophy, agricultural and craft skills, governance, warfare, medicine, and spiritual knowledge. In Islamised areas: Quran, Arabic literacy, Islamic law.', institutions:'Guilds of craftspeople, age-grade societies, the Ogboni and other secret societies, and Islamic scholars (mallams) all served educational functions. Timbuktu\'s influence reached into northern Nigeria.', literacy:'Arabic literacy perhaps 5–15% in the Muslim north; non-alphabetic literacy in the south. Oral knowledge transmission was of extremely high quality and sophistication.' }},
-
-  // ── MONGOLIA ──
-  { r:['mongolia','mongol'], y:[1200,1400], d:{ region:'Mongol Empire', period:'Height of the Mongol Empire', access:'Mongol education was primarily oral and practical — horsemanship, archery, survival skills, and memorisation of genealogies and epic poetry. Conquered peoples\' scholars were employed and protected. Literacy was initially rare among the Mongols themselves.', curriculum:'The Mongols adopted writing using the Uyghur script under Genghis Khan. Administration of the empire required multilingual scribes drawn from conquered peoples. Buddhist and Islamic scholarship was patronised at the courts of various khanates.', institutions:'The Mongol court relied on Nestorian Christian, Buddhist, Confucian, and Islamic scholars simultaneously. The Pax Mongolica facilitated the transfer of knowledge across Eurasia.', literacy:'Very low among native Mongols; high tolerance for diverse literate traditions in conquered territories.' }},
-];
-
-function lookupOffline(name,yr) {
-  const n = name.toLowerCase();
-  let best = null, bestScore = -1;
-  for (const e of OFFLINE) {
-    const nameMatch = e.r.some(r => n.includes(r) || r.includes(n.split(' ')[0]));
-    if (!nameMatch) continue;
-    const [yMin,yMax] = e.y;
-    const inRange = yr>=yMin && yr<=yMax;
-    const dist = inRange ? 0 : Math.min(Math.abs(yr-yMin), Math.abs(yr-yMax));
-    const score = (inRange ? 1000 : 0) - dist;
-    if (score > bestScore) { bestScore = score; best = e; }
-  }
-  return best ? best.d : null;
-}
-
-// ── API CALL (via secure Vercel proxy) ───────────────────────────────────────
-async function callAPI(name,yr,label,cacheKey) {
-  // Try offline dataset first
-  const offline = lookupOffline(name, yr);
-  if (offline) {
-    const edu = { ...offline };
-    if (!edu.region) edu.region = name;
-    if (!edu.period) edu.period = label;
-    if (edu.region) cRegion.textContent = edu.region;
-    if (edu.period) cPeriod.textContent = edu.period;
-    eduCache[cacheKey] = edu;
-    renderCard(edu);
-    return;
-  }
-  // Fall back to proxy
+async function callAPI(name, yr, label, cacheKey) {
   try {
     const res = await fetch('/api/claude', {
       method: 'POST',
@@ -400,51 +281,59 @@ async function callAPI(name,yr,label,cacheKey) {
       body: JSON.stringify({
         model: 'claude-haiku-4-5-20251001',
         max_tokens: 900,
-        system: 'You are a specialist historian of global education. Return ONLY valid JSON — no markdown fences, no preamble.',
+        system: 'You are a specialist historian of global education. Return ONLY valid JSON — no markdown fences, no preamble, no extra text.',
         messages: [{
           role: 'user',
-          content: `Educational history for "${name}" around ${label}. Return ONLY this JSON: {"region":"...","period":"...","access":"...","curriculum":"...","institutions":"...","literacy":"...","isColonial":false,"indigenous":null,"colonial":null}`
+          content: `Educational history for "${name}" around ${label}. Return ONLY this JSON object: {"region":"...","period":"...","access":"...","curriculum":"...","institutions":"...","literacy":"...","isColonial":false,"indigenous":null,"colonial":null}`
         }]
       })
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
-    const edu = JSON.parse(
-      data.content?.find(b => b.type === 'text')?.text
-        ?.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim() || '{}'
-    );
+    const text = data.content?.find(b => b.type === 'text')?.text
+      ?.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim() || '{}';
+    const edu = JSON.parse(text);
     if (edu.region) cRegion.textContent = edu.region;
     if (edu.period) cPeriod.textContent = edu.period;
     eduCache[cacheKey] = edu;
     renderCard(edu);
-    return;
   } catch(e) {
     console.error(e);
+    cBody.innerHTML=`<div class="cf"><div class="cf-val" style="font-style:italic;opacity:.55;font-family:'EB Garamond',serif;">
+      The archive could not be reached. Please try again.
+    </div></div>`;
   }
-  // Nothing matched and proxy failed
-  cBody.innerHTML=`<div class="cf"><div class="cf-val" style="font-style:italic;opacity:.55;font-family:'EB Garamond',serif;">
-    No records in the archive for this region at this time. Try a major civilisation or a different era.
-  </div></div>`;
 }
 
 function renderCard(edu) {
-  let h=field('Who Had Access',edu.access)+field('What Was Taught',edu.curriculum)+field('Key Institutions',edu.institutions)+field('Literacy & Enrolment',edu.literacy);
-  if(edu.isColonial&&edu.indigenous&&edu.colonial) {
-    colData={indigenous:edu.indigenous,colonial:edu.colonial};
-    h+=`<div class="ctabs"><button class="ctab on" id="ctab-i" onclick="switchTab('indigenous')">Indigenous</button><button class="ctab" id="ctab-c" onclick="switchTab('colonial')">Colonial</button></div><div class="ccontent" id="ccont">${edu.indigenous}</div>`;
+  let h = field('Who Had Access', edu.access)
+        + field('What Was Taught', edu.curriculum)
+        + field('Key Institutions', edu.institutions)
+        + field('Literacy & Enrolment', edu.literacy);
+  if (edu.isColonial && edu.indigenous && edu.colonial) {
+    colData = { indigenous: edu.indigenous, colonial: edu.colonial };
+    h += `<div class="ctabs">
+      <button class="ctab on" id="ctab-i" onclick="switchTab('indigenous')">Indigenous</button>
+      <button class="ctab" id="ctab-c" onclick="switchTab('colonial')">Colonial</button>
+    </div>
+    <div class="ccontent" id="ccont">${edu.indigenous}</div>`;
   }
-  cBody.innerHTML=h;
+  cBody.innerHTML = h;
 }
-function field(l,v) { return `<div class="cf"><div class="cf-lbl">${l}</div><div class="cf-val">${v||'—'}</div></div>`; }
-window.switchTab=function(w) {
-  if(!colData) return;
-  document.getElementById('ctab-i').classList.toggle('on',w==='indigenous');
-  document.getElementById('ctab-c').classList.toggle('on',w==='colonial');
-  document.getElementById('ccont').textContent=colData[w];
-};
-window.closeCard=function() { card.classList.remove('show'); };
 
-// ── TIMELINE ─────────────────────────────────────────────────────────────────
+function field(l, v) {
+  return `<div class="cf"><div class="cf-lbl">${l}</div><div class="cf-val">${v || '—'}</div></div>`;
+}
+
+window.switchTab = function(w) {
+  if (!colData) return;
+  document.getElementById('ctab-i').classList.toggle('on', w === 'indigenous');
+  document.getElementById('ctab-c').classList.toggle('on', w === 'colonial');
+  document.getElementById('ccont').textContent = colData[w];
+};
+
+window.closeCard = function() { card.classList.remove('show'); };
+
 const thumb=document.getElementById('thumb');
 const trackFill=document.getElementById('track-fill');
 const yearDisp=document.getElementById('year-display');
@@ -470,7 +359,6 @@ document.addEventListener('mousemove',e=>{ if(!dragging) return; setThumb(scrubF
 document.addEventListener('mouseup',()=>{ if(!dragging) return; dragging=false; thumb.classList.remove('drag'); loadYear(curYear); });
 scrubWrap.addEventListener('click',e=>{ if(e.target===thumb) return; setThumb(scrubFrac(e)); loadYear(curYear); });
 
-// ── YEAR LOAD ────────────────────────────────────────────────────────────────
 const fadeEl=document.getElementById('fade');
 async function loadYear(yr) {
   const ny=nearestYr(yr); if(ny===lastMapYear) return;
@@ -479,7 +367,6 @@ async function loadYear(yr) {
   setTimeout(()=>fadeEl.classList.remove('on'),80);
 }
 
-// ── START ────────────────────────────────────────────────────────────────────
 async function startApp() {
   const ov=document.getElementById('map-load');
   try { renderGeo(await loadFallback()); } catch(e) {}
