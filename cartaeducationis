@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Carta Educationis</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+:root {
+  --bg:        #06090f;
+  --ocean:     #0c1e30;
+  --gold:      #c8a84b;
+  --gold-hi:   #e8cc7a;
+  --gold-glow: rgba(200,168,75,0.4);
+  --parch-d:   #a8946a;
+  --text:      #cbbf98;
+  --card-bg:   rgba(5,8,15,0.97);
+  --border:    rgba(200,168,75,0.2);
+  --border-b:  rgba(200,168,75,0.55);
+}
+html,body { width:100%;height:100%;overflow:hidden;background:var(--bg); }
+#app { width:100vw;height:100vh;position:relative;display:flex;flex-direction:column; }
+#map-wrap { flex:1;position:relative;overflow:hidden; }
+#map { width:100%;height:100%;cursor:grab; }
+#map:active { cursor:grabbing; }
+#app::after {
+  content:'';position:absolute;inset:0;pointer-events:none;z-index:50;opacity:.45;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.045'/%3E%3C/svg%3E");
+  background-size:200px;
+}
+.sphere   { fill:var(--ocean); }
+.gratline { fill:none;stroke:rgba(200,168,75,0.04);stroke-width:0.5; }
+.land     { stroke:rgba(200,168,75,0.12);stroke-width:0.5;cursor:pointer;transition:filter .12s,stroke .12s; }
+.land:hover { stroke:var(--gold);stroke-width:1.2;filter:brightness(1.7) saturate(1.3); }
+#header { position:absolute;top:20px;left:50%;transform:translateX(-50%);text-align:center;z-index:20;pointer-events:none; }
+#header h1 { font-family:'Cinzel Decorative',serif;font-size:1.15rem;color:var(--gold);letter-spacing:.38em;text-shadow:0 0 40px var(--gold-glow),0 0 80px rgba(200,168,75,.12); }
+#header p  { font-family:'EB Garamond',serif;font-style:italic;font-size:.75rem;color:var(--parch-d);letter-spacing:.18em;margin-top:4px; }
+.corner { position:absolute;width:44px;height:44px;pointer-events:none;z-index:18;opacity:.5; }
+.tl{top:10px;left:10px} .tr{top:10px;right:10px;transform:scaleX(-1)}
+#tip { position:absolute;pointer-events:none;z-index:35;white-space:nowrap;background:rgba(5,8,15,.93);border:1px solid var(--border-b);padding:4px 12px;font-family:'Cinzel',serif;font-size:.65rem;letter-spacing:.12em;color:var(--gold);opacity:0;transition:opacity .12s; }
+#hint { position:absolute;bottom:112px;left:50%;transform:translateX(-50%);font-family:'EB Garamond',serif;font-style:italic;font-size:.7rem;color:rgba(168,148,96,.35);letter-spacing:.15em;pointer-events:none;z-index:8;transition:opacity 1s; }
+#compass { position:absolute;bottom:116px;left:22px;width:60px;height:60px;opacity:.16;pointer-events:none;z-index:10; }
+#fade { position:absolute;inset:0;background:var(--bg);opacity:0;pointer-events:none;z-index:5;transition:opacity .25s; }
+#fade.on { opacity:.4; }
+#map-load { position:absolute;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:40;transition:opacity .6s; }
+#map-load.gone { opacity:0;pointer-events:none; }
+.load-title { font-family:'Cinzel Decorative',serif;font-size:1rem;color:var(--gold);letter-spacing:.35em;text-shadow:0 0 30px var(--gold-glow); }
+.load-sub   { font-family:'EB Garamond',serif;font-style:italic;font-size:.78rem;color:var(--parch-d);letter-spacing:.18em;margin-top:8px;text-align:center; }
+.load-bar   { width:160px;height:1px;background:rgba(200,168,75,.12);margin:16px auto 0;overflow:hidden; }
+.load-bar-fill { height:100%;background:var(--gold);animation:lb 1.8s ease-in-out infinite; }
+@keyframes lb { 0%{width:0%;margin-left:0%}50%{width:60%;margin-left:20%}100%{width:0%;margin-left:100%} }
+
+/* EDU CARD */
+#edu-card { position:absolute;top:64px;right:16px;width:310px;background:var(--card-bg);border:1px solid var(--border);z-index:25;opacity:0;transform:translateX(12px);transition:opacity .28s,transform .28s;pointer-events:none;backdrop-filter:blur(18px);max-height:calc(100vh - 185px);display:flex;flex-direction:column;overflow:hidden; }
+#edu-card::before { content:'';display:block;height:2px;background:linear-gradient(to right,transparent,var(--gold),transparent); }
+#edu-card.show { opacity:1;transform:translateX(0);pointer-events:auto; }
+.card-head { padding:13px 16px;background:linear-gradient(135deg,rgba(200,168,75,.1),rgba(200,168,75,.02));border-bottom:1px solid var(--border);position:relative; }
+.card-region { font-family:'Cinzel',serif;font-size:.88rem;font-weight:600;color:var(--gold);line-height:1.25;padding-right:20px; }
+.card-period { font-family:'EB Garamond',serif;font-style:italic;font-size:.78rem;color:var(--parch-d);margin-top:3px; }
+#card-close  { position:absolute;top:9px;right:12px;background:none;border:none;color:var(--gold);font-size:.85rem;cursor:pointer;opacity:.45;transition:opacity .18s; }
+#card-close:hover { opacity:1; }
+.card-body { overflow-y:auto;flex:1; }
+.card-body::-webkit-scrollbar { width:2px; }
+.card-body::-webkit-scrollbar-thumb { background:rgba(200,168,75,.22);border-radius:2px; }
+.cf { padding:10px 16px;border-bottom:1px solid rgba(200,168,75,.055); }
+.cf:last-child { border-bottom:none; }
+.cf-lbl { font-family:'Cinzel',serif;font-size:.52rem;letter-spacing:.22em;color:var(--gold);opacity:.7;text-transform:uppercase;margin-bottom:4px; }
+.cf-val { font-family:'EB Garamond',serif;font-size:.865rem;color:var(--text);line-height:1.55; }
+.card-loading { padding:28px 16px;text-align:center;font-family:'EB Garamond',serif;font-style:italic;font-size:.85rem;color:var(--parch-d); }
+.dots::after { content:'';animation:dt 1.4s steps(4,end) infinite; }
+@keyframes dt { 0%{content:''}25%{content:'.'}50%{content:'..'}75%{content:'...'}100%{content:''} }
+.ctabs { display:flex;border-top:1px solid var(--border);border-bottom:1px solid rgba(200,168,75,.06); }
+.ctab  { flex:1;padding:7px 4px;font-family:'Cinzel',serif;font-size:.52rem;letter-spacing:.14em;text-transform:uppercase;background:none;border:none;color:var(--parch-d);cursor:pointer;transition:all .18s; }
+.ctab.on { color:var(--gold);background:rgba(200,168,75,.07); }
+.ccontent { padding:10px 16px;font-family:'EB Garamond',serif;font-size:.865rem;color:var(--text);line-height:1.55;border-bottom:1px solid rgba(200,168,75,.055); }
+
+/* TIMELINE */
+#timeline { height:100px;z-index:20;position:relative;background:linear-gradient(to top,rgba(4,6,12,.98) 0%,rgba(4,6,12,.78) 70%,transparent 100%);border-top:1px solid var(--border);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;padding:0 72px 14px; }
+#era-name    { font-family:'EB Garamond',serif;font-style:italic;font-size:.66rem;color:rgba(168,148,96,.45);letter-spacing:.16em;pointer-events:none; }
+#year-display{ font-family:'Cinzel',serif;font-size:1.6rem;font-weight:600;color:var(--gold);letter-spacing:.1em;text-shadow:0 0 28px var(--gold-glow);min-width:175px;text-align:center;line-height:1; }
+#scrub-wrap  { width:100%;max-width:860px;position:relative;height:32px;display:flex;align-items:center; }
+#era-bands   { position:absolute;left:0;right:0;height:5px;top:50%;transform:translateY(-50%);border-radius:3px;overflow:hidden;display:flex; }
+.era-seg     { height:100%; }
+#track       { position:absolute;left:0;right:0;height:2px;background:rgba(200,168,75,.1);top:50%;transform:translateY(-50%); }
+#track-fill  { height:100%;background:linear-gradient(to right,#6e500d,var(--gold));width:0%; }
+#thumb { position:absolute;width:18px;height:18px;border-radius:50%;background:radial-gradient(circle at 35% 35%,var(--gold-hi),var(--gold));top:50%;transform:translate(-50%,-50%);left:0%;cursor:ew-resize;box-shadow:0 0 12px var(--gold-glow),0 0 24px rgba(200,168,75,.15);z-index:3; }
+#thumb::after { content:'';position:absolute;inset:5px;background:var(--bg);border-radius:50%; }
+#thumb:hover,#thumb.drag { box-shadow:0 0 18px var(--gold-glow),0 0 36px rgba(200,168,75,.3); }
+#era-lbls  { position:absolute;bottom:-17px;left:0;right:0;display:flex;justify-content:space-between; }
+.era-lbl   { font-family:'EB Garamond',serif;font-size:.56rem;color:rgba(168,148,96,.38);letter-spacing:.08em; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <div id="map-wrap">
+    <svg id="map"></svg>
+    <div id="map-load"><div style="text-align:center">
+      <div class="load-title">CARTA EDUCATIONIS</div>
+      <div class="load-sub">Charting the ancient world…</div>
+      <div class="load-bar"><div class="load-bar-fill"></div></div>
+    </div></div>
+    <div id="fade"></div>
+    <div id="tip"></div>
+  </div>
+
+  <div id="header">
+    <h1>CARTA EDUCATIONIS</h1>
+    <p>A History of Human Learning · 2000 BC — Present</p>
+  </div>
+
+  <div class="corner tl"><svg viewBox="0 0 44 44" fill="none"><path d="M2 2L18 2L18 4L4 4L4 18L2 18Z" fill="#c8a84b"/><path d="M2 2L9 9" stroke="#c8a84b" stroke-width="0.6"/><circle cx="2" cy="2" r="1.5" fill="#c8a84b"/></svg></div>
+  <div class="corner tr"><svg viewBox="0 0 44 44" fill="none"><path d="M2 2L18 2L18 4L4 4L4 18L2 18Z" fill="#c8a84b"/><path d="M2 2L9 9" stroke="#c8a84b" stroke-width="0.6"/><circle cx="2" cy="2" r="1.5" fill="#c8a84b"/></svg></div>
+
+  <svg id="compass" viewBox="0 0 64 64" fill="none">
+    <circle cx="32" cy="32" r="29" stroke="#c8a84b" stroke-width="0.6"/>
+    <circle cx="32" cy="32" r="21" stroke="#c8a84b" stroke-width="0.4"/>
+    <path d="M32 5L34 29L32 32L30 29Z" fill="#c8a84b"/>
+    <path d="M32 59L34 35L32 32L30 35Z" fill="#c8a84b" opacity=".45"/>
+    <path d="M5 32L29 30L32 32L29 34Z" fill="#c8a84b" opacity=".45"/>
+    <path d="M59 32L35 30L32 32L35 34Z" fill="#c8a84b" opacity=".45"/>
+    <circle cx="32" cy="32" r="2.8" fill="#c8a84b"/>
+    <text x="32" y="13" text-anchor="middle" font-family="Cinzel,serif" font-size="6" fill="#c8a84b">N</text>
+  </svg>
+
+  <div id="hint">click a region to explore its educational history</div>
+
+  <div id="edu-card">
+    <button id="card-close" onclick="closeCard()">✕</button>
+    <div class="card-head">
+      <div class="card-region" id="card-region">—</div>
+      <div class="card-period" id="card-period">—</div>
+    </div>
+    <div class="card-body" id="card-body"></div>
+  </div>
+
+  <div id="timeline">
+    <div id="era-name">Bronze Age Civilisations</div>
+    <div id="year-display">2000 BC</div>
+    <div id="scrub-wrap">
+      <div id="era-bands"></div>
+      <div id="track"><div id="track-fill"></div></div>
+      <div id="thumb"></div>
+      <div id="era-lbls">
+        <span class="era-lbl">2000 BC</span>
+        <span class="era-lbl">1000 BC</span>
+        <span class="era-lbl">500 BC</span>
+        <span class="era-lbl">1 AD</span>
+        <span class="era-lbl">1000</span>
+        <span class="era-lbl">1500</span>
+        <span class="era-lbl">1800</span>
+        <span class="era-lbl">Today</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+const ISO = {"4":"Afghanistan","8":"Albania","12":"Algeria","24":"Angola","32":"Argentina","36":"Australia","40":"Austria","50":"Bangladesh","56":"Belgium","64":"Bhutan","68":"Bolivia","76":"Brazil","100":"Bulgaria","116":"Cambodia","120":"Cameroon","124":"Canada","144":"Sri Lanka","152":"Chile","156":"China","170":"Colombia","180":"DR Congo","188":"Costa Rica","192":"Cuba","208":"Denmark","218":"Ecuador","818":"Egypt","231":"Ethiopia","246":"Finland","250":"France","276":"Germany","288":"Ghana","300":"Greece","320":"Guatemala","332":"Haiti","340":"Honduras","356":"India","360":"Indonesia","364":"Iran","368":"Iraq","372":"Ireland","376":"Israel","380":"Italy","392":"Japan","400":"Jordan","404":"Kenya","408":"North Korea","410":"South Korea","414":"Kuwait","418":"Laos","422":"Lebanon","434":"Libya","484":"Mexico","504":"Morocco","508":"Mozambique","524":"Nepal","528":"Netherlands","558":"Nicaragua","566":"Nigeria","578":"Norway","586":"Pakistan","604":"Peru","608":"Philippines","616":"Poland","620":"Portugal","642":"Romania","643":"Russia","682":"Saudi Arabia","706":"Somalia","710":"South Africa","724":"Spain","729":"Sudan","752":"Sweden","756":"Switzerland","760":"Syria","764":"Thailand","792":"Turkey","800":"Uganda","804":"Ukraine","826":"United Kingdom","840":"United States","858":"Uruguay","862":"Venezuela","704":"Vietnam","887":"Yemen","716":"Zimbabwe","450":"Madagascar","466":"Mali","478":"Mauritania","562":"Niger","454":"Malawi","516":"Namibia","646":"Rwanda","694":"Sierra Leone","748":"Eswatini","768":"Togo","788":"Tunisia","854":"Burkina Faso","108":"Burundi","140":"Central African Republic","148":"Chad","178":"Republic of Congo","384":"Ivory Coast","232":"Eritrea","242":"Fiji","598":"Papua New Guinea","196":"Cyprus","203":"Czech Republic","703":"Slovakia","705":"Slovenia","191":"Croatia","70":"Bosnia and Herzegovina","807":"North Macedonia","499":"Montenegro","688":"Serbia","440":"Lithuania","428":"Latvia","233":"Estonia","348":"Hungary","498":"Moldova","112":"Belarus","268":"Georgia","031":"Azerbaijan","051":"Armenia","398":"Kazakhstan","417":"Kyrgyzstan","762":"Tajikistan","795":"Turkmenistan","860":"Uzbekistan","496":"Mongolia","462":"Maldives","686":"Senegal","222":"El Salvador","270":"Gambia","324":"Guinea","624":"Guinea-Bissau","426":"Lesotho","430":"Liberia","204":"Benin","72":"Botswana","174":"Comoros","262":"Djibouti","266":"Gabon","388":"Jamaica","480":"Mauritius","591":"Panama","630":"Puerto Rico","784":"United Arab Emirates","776":"Tonga","882":"Samoa"};
+
+const MIN_YR=-2000, MAX_YR=2024, RANGE=MAX_YR-MIN_YR;
+const HIST_YRS=[-2000,-1000,-500,1,200,400,600,800,1000,1100,1200,1279,1300,1400,1492,1500,1530,1600,1650,1700,1715,1783,1800,1815,1880,1914,1920,1938,1945,1960,1994,2000];
+const ERAS=[
+  {s:-2000,e:-800,  c:'rgba(180,115,35,0.55)',n:'Bronze Age Civilisations'},
+  {s:-800, e:-100,  c:'rgba(160,45,45,0.52)', n:'Iron Age & Classical Antiquity'},
+  {s:-100, e:500,   c:'rgba(140,50,30,0.48)', n:'Roman Era & Late Antiquity'},
+  {s:500,  e:1100,  c:'rgba(45,65,125,0.52)', n:'Early Medieval'},
+  {s:1100, e:1500,  c:'rgba(55,80,145,0.52)', n:'High & Late Medieval'},
+  {s:1500, e:1700,  c:'rgba(45,105,75,0.52)', n:'Renaissance & Reformation'},
+  {s:1700, e:1850,  c:'rgba(55,95,65,0.50)',  n:'Enlightenment & Revolution'},
+  {s:1850, e:1950,  c:'rgba(75,65,130,0.52)', n:'Industrial & Modern Age'},
+  {s:1950, e:2025,  c:'rgba(35,95,105,0.52)', n:'Contemporary'},
+];
+const PAL=['hsl(18,30%,26%)','hsl(32,26%,24%)','hsl(198,28%,22%)','hsl(212,32%,24%)','hsl(248,22%,26%)','hsl(158,24%,22%)','hsl(278,20%,26%)','hsl(352,26%,26%)','hsl(44,24%,24%)','hsl(168,24%,23%)','hsl(308,19%,25%)','hsl(98,20%,23%)','hsl(228,26%,28%)','hsl(62,20%,24%)','hsl(188,26%,24%)'];
+
+let curYear=MIN_YR, lastMapYear=null;
+let geoCache={}, eduCache={}, colorCache={};
+let dragging=false, loadTimer=null, colData=null;
+
+// ── UTILS ────────────────────────────────────────────────────────────────────
+function yrLabel(yr) { return yr<=0?`${Math.abs(yr)||1} BC`:`${yr} AD`; }
+function nearestYr(yr){ return HIST_YRS.reduce((p,c)=>Math.abs(c-yr)<Math.abs(p-yr)?c:p); }
+function getEra(yr)  { return (ERAS.find(e=>yr>=e.s&&yr<e.e)||ERAS[ERAS.length-1]).n; }
+function hue(name) {
+  if(!name) return 'hsl(220,16%,22%)';
+  if(colorCache[name]) return colorCache[name];
+  let h=5381; for(let i=0;i<name.length;i++) h=((h<<5)+h)+name.charCodeAt(i);
+  return colorCache[name]=PAL[Math.abs(h)%PAL.length];
+}
+function getName(d) {
+  const p=d.properties||{};
+  if(p.NAME) return p.NAME;
+  if(p.name) return p.name;
+  if(p.ADMIN) return p.ADMIN;
+  if(p.admin) return p.admin;
+  if(p.NAME_LONG) return p.NAME_LONG;
+  const id=String(d.id||p.id||'');
+  return (id&&ISO[id])?ISO[id]:'Unknown Region';
+}
+
+// ── D3 MAP ───────────────────────────────────────────────────────────────────
+const W=window.innerWidth, H=window.innerHeight-100;
+const svg=d3.select('#map').attr('width',W).attr('height',H).attr('viewBox',`0 0 ${W} ${H}`);
+const proj=d3.geoNaturalEarth1().scale(W/6.3).translate([W/2,H/2]);
+const gPath=d3.geoPath().projection(proj);
+const gRoot=svg.append('g');
+gRoot.append('path').datum({type:'Sphere'}).attr('class','sphere').attr('d',gPath);
+gRoot.append('path').datum(d3.geoGraticule()()).attr('class','gratline').attr('d',gPath);
+const gLand=gRoot.append('g');
+const zoom=d3.zoom().scaleExtent([1,14]).on('zoom',evt=>{
+  gRoot.attr('transform',evt.transform);
+  gLand.selectAll('.land').attr('stroke-width',0.5/evt.transform.k);
+});
+svg.call(zoom);
+
+// ── GEO FETCH ────────────────────────────────────────────────────────────────
+async function loadFallback() {
+  if(geoCache.__fb) return geoCache.__fb;
+  const r=await fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json');
+  const t=await r.json();
+  return geoCache.__fb=topojson.feature(t,t.objects.countries);
+}
+async function fetchGeo(yr) {
+  const ny=nearestYr(yr);
+  if(geoCache[ny]) return geoCache[ny];
+  for(const url of [
+    `https://cdn.jsdelivr.net/gh/aourednik/historical-basemaps@master/geojson/world_${ny}.geojson`,
+    `https://raw.githubusercontent.com/aourednik/historical-basemaps/master/geojson/world_${ny}.geojson`
+  ]) {
+    try {
+      const r=await fetch(url); if(!r.ok) continue;
+      const d=await r.json();
+      if(d?.features?.length>0) return geoCache[ny]=d;
+    } catch(e) {}
+  }
+  return geoCache.__fb||null;
+}
+
+// ── RENDER ───────────────────────────────────────────────────────────────────
+function renderGeo(geo) {
+  if(!geo?.features) return;
+  gLand.selectAll('.land').remove();
+  gLand.selectAll('.land').data(geo.features).enter()
+    .append('path').attr('class','land').attr('d',gPath)
+    .style('fill',d=>hue(getName(d))).style('opacity',0)
+    .on('mouseover',onHover).on('mousemove',onMove).on('mouseout',onOut).on('click',onClick)
+    .transition().duration(650).ease(d3.easeCubicInOut).style('opacity',1);
+}
+
+// ── INTERACTION ──────────────────────────────────────────────────────────────
+const tip=document.getElementById('tip');
+function onHover(evt,d) {
+  const n=getName(d); if(n==='Unknown Region') return;
+  tip.textContent=n; tip.style.opacity='1';
+}
+function onMove(evt) {
+  const [x,y]=d3.pointer(evt,document.getElementById('app'));
+  tip.style.left=(x+16)+'px'; tip.style.top=(y-8)+'px';
+}
+function onOut() { tip.style.opacity='0'; }
+function onClick(evt,d) {
+  evt.stopPropagation();
+  const n=getName(d); if(n!=='Unknown Region') showCard(n,curYear);
+}
+svg.on('click',()=>closeCard());
+
+// ── EDU CARD ─────────────────────────────────────────────────────────────────
+const card=document.getElementById('edu-card');
+const cRegion=document.getElementById('card-region');
+const cPeriod=document.getElementById('card-period');
+const cBody=document.getElementById('card-body');
+
+function showCard(name,yr) {
+  const label=yrLabel(yr), key=`${name}||${nearestYr(yr)}`;
+  cRegion.textContent=name; cPeriod.textContent=label;
+  cBody.innerHTML='<div class="card-loading"><span class="dots">Consulting the archives</span></div>';
+  card.classList.add('show');
+  if(eduCache[key]) { renderCard(eduCache[key]); return; }
+  callAPI(name,yr,label,key);
+}
+
+// ── OFFLINE DATASET ───────────────────────────────────────────────────────────
+const OFFLINE = [
+  // ── EGYPT ──
+  { r:['egypt','kemet'], y:[-2000,-500], d:{ region:'Ancient Egypt', period:'New Kingdom & Third Intermediate Period', access:'Scribal schools (Houses of Instruction) admitted boys of elite families; girls and commoners largely excluded. Royal and priestly sons had the most privileged access.', curriculum:'Hieroglyphic writing, mathematics, religious texts, medical knowledge, and administrative record-keeping. Copying of canonical texts such as the Book of the Dead and Kemyt was central.', institutions:'Per-ankh (Houses of Life) attached to temples; the scribal school at Deir el-Medina served artisans of the royal necropolis. The sage Amenemope composed influential wisdom texts.', literacy:'Estimated 1–3% of the population were literate. Perhaps a few thousand active scribes supported the state apparatus at any given time.' }},
+  { r:['egypt'], y:[-500,700], d:{ region:'Ptolemaic / Roman Egypt', period:'Hellenistic and Roman period', access:'Greek-speaking elite males attended gymnasia; Egyptian priestly education continued in temples for a small priestly caste. Women of wealthy families could receive private tuition.', curriculum:'Greek gymnasium curriculum: rhetoric, philosophy, mathematics, athletics. Demotic Egyptian tradition continued alongside in temple schools covering ritual, astronomy and medicine.', institutions:'The Library and Mouseion of Alexandria drew scholars from across the Mediterranean. Temple schools at Memphis and Karnak maintained hieroglyphic and Demotic traditions.', literacy:'Greek literacy perhaps 15–20% among urban males; Egyptian hieroglyphic literacy under 1%. A bilingual scribal class bridged the two worlds.' }},
+  { r:['egypt'], y:[700,1800], d:{ region:'Egypt under Islamic Rule', period:'Abbasid to Ottoman Egypt', access:'Boys of all classes could attend mosque schools (kuttab); girls rarely received formal schooling. Advanced study open to males who could afford to travel to Al-Azhar.', curriculum:'Quranic memorisation, Arabic grammar, Islamic jurisprudence (fiqh), hadith, arithmetic and sometimes astronomy at higher levels.', institutions:"Al-Azhar Mosque (founded 970 CE) became the world's foremost centre of Islamic learning, attracting students from across the Muslim world.", literacy:'Functional Quranic literacy perhaps 10–20% among urban males. Rural literacy considerably lower.' }},
+
+  // ── MESOPOTAMIA / IRAQ ──
+  { r:['mesopotamia','sumer','babylon','akkad','assyria','iraq'], y:[-2000,-300], d:{ region:'Mesopotamia (Old Babylonian / Assyrian Period)', period:'Bronze and Iron Age Mesopotamia', access:'The edubba (tablet house) admitted sons of scribes, merchants and officials almost exclusively. Girls were very rarely educated formally though a few female scribes are attested.', curriculum:'Cuneiform writing, Sumerian language (even after it ceased to be spoken), mathematics including multiplication tables and geometry, law codes, divination, and hymns.', institutions:'The edubba schools of Nippur and Babylon are the best attested. The "Schooldays" text provides a vivid account of daily school life. Libraries at Nineveh under Ashurbanipal preserved thousands of tablets.', literacy:'Roughly 1–2% of the population were functionally literate in cuneiform. The script\'s complexity made full literacy a specialist achievement.' }},
+
+  // ── PERSIA / IRAN ──
+  { r:['persia','iran','achaemenid','parthia','sassanid','safavid'], y:[-600,600], d:{ region:'Persian Empire (Achaemenid–Sassanid)', period:'Iron Age to Late Antiquity', access:'Zoroastrian priestly education was restricted to males of the priestly caste (Magi). Noble boys received courtly education; commoners had no formal schooling.', curriculum:'The Avesta and Zoroastrian scripture, astronomy, medicine (especially at the Academy of Gondishapur), royal administration, horsemanship and martial arts for the nobility.', institutions:'The Academy of Gondishapur (founded c. 3rd century CE) was one of the most significant centres of learning in the ancient world, translating Greek and Indian scientific texts.', literacy:'Very low overall; literacy was largely restricted to the priestly and administrative classes. Aramaic served as the lingua franca of administration.' }},
+  { r:['iran','persia'], y:[600,1800], d:{ region:'Islamic Persia', period:'Abbasid to Safavid Period', access:'Boys of means could attend maktab (elementary) schools; advanced madrasa education was open to male students of demonstrated ability regardless of class.', curriculum:'Quran, Persian and Arabic literature, philosophy, mathematics, and the sciences. Persian became a major literary and scholarly language alongside Arabic.', institutions:'Madrasas funded by waqf (endowments); the Nizamiyya schools founded by Nizam al-Mulk in the 11th century were the most prestigious. Scholars such as Avicenna and Al-Biruni emerged from this tradition.', literacy:'Urban male literacy perhaps 15–25%. The Persian literary tradition produced extraordinarily high cultural output relative to literacy rates.' }},
+
+  // ── GREECE ──
+  { r:['greece','athens','sparta','macedon','hellas'], y:[-800,100], d:{ region:'Classical & Hellenistic Greece', period:'Archaic to Hellenistic Period', access:'Free citizen males received education; enslaved people and women were excluded from formal schooling, though wealthy women could receive private instruction. Sparta educated girls in physical training.', curriculum:'Athens: reading, writing, arithmetic, music, gymnastics, and rhetoric. Higher education included philosophy and the arts. Sparta: military training, discipline, and civic virtue above all.', institutions:'Plato\'s Academy (387 BCE), Aristotle\'s Lyceum (335 BCE), and the gymnasium were the great institutions. The sophists offered paid instruction in rhetoric to those who could afford it.', literacy:'Perhaps 10–30% of free adult males in Athens were literate; far less across the broader Greek world. Athens was unusually literate by ancient standards.' }},
+
+  // ── ROME / ITALY ──
+  { r:['rome','roman','italy','italia'], y:[-300,500], d:{ region:'Roman Republic & Empire', period:'Classical Rome', access:'Boys of citizen families attended ludus (primary) and grammaticus (secondary) schools. Elite males proceeded to rhetoric schools. Girls of wealthy families could be privately educated; enslaved people were sometimes educated as tutors.', curriculum:'Latin and Greek literacy, rhetoric, grammar, law, and philosophy. The seven liberal arts (grammar, rhetoric, logic, arithmetic, geometry, music, astronomy) formed the ideal curriculum.', institutions:'Schools of rhetoric in Rome, Carthage, and Beirut; the great libraries of Rome. Quintilian\'s Institutio Oratoria was the foundational pedagogical text.', literacy:'Perhaps 20–30% of urban adult males in Rome itself; much lower across the provinces and among women. A higher literacy rate than most ancient societies.' }},
+
+  // ── BYZANTINE / TURKEY ──
+  { r:['byzantine','byzantium','turkey','anatolia','ottoman'], y:[300,1100], d:{ region:'Byzantine Empire', period:'Early to Middle Byzantine Period', access:'Boys of the urban professional class attended schools; the imperial civil service required educated men. Monastic education was open to men of any background. Girls rarely received formal schooling.', curriculum:'Classical Greek grammar and rhetoric remained central, alongside Christian theology. The curriculum preserved and transmitted ancient Greek texts throughout the medieval period.', institutions:'The University of Constantinople (founded 425 CE) and later reorganised under Constantine IX. Patriarchal schools trained clergy. Monastic scriptoria preserved classical manuscripts.', literacy:'Estimated 10–20% literacy among urban males; higher in Constantinople. Byzantine scholarship preserved much of the ancient Greek intellectual tradition.' }},
+  { r:['ottoman','turkey'], y:[1300,1920], d:{ region:'Ottoman Empire', period:'Rise to decline of the Ottoman state', access:'Boys attended mekteb (Quran schools) freely; elite sons entered the palace school (Enderun). The devshirme system educated selected Christian boys for imperial service. Girls were educated within the household.', curriculum:'Quran, Islamic law, Arabic and Ottoman Turkish, mathematics and astronomy in advanced schools. The Enderun palace school added military arts, music, and statecraft.', institutions:'The Süleymaniye complex in Istanbul housed mosques, madrasas, a hospital and library. By the 19th century Tanzimat reforms introduced secular schools (rüşdiye and idadiye).', literacy:'Estimated 2–5% in early centuries; rising to perhaps 10–15% by the 19th century as secular schools spread.' }},
+
+  // ── CHINA ──
+  { r:['china','han','tang','song','ming','qing','zhou','qin'], y:[-500,600], d:{ region:'Han Dynasty China', period:'Classical & Han Imperial China', access:'The imperial examination system (keju) was theoretically open to all males but in practice favoured those wealthy enough to study for years. Women were excluded from examinations entirely.', curriculum:'The Five Classics (I Ching, Book of Songs, etc.) and Confucian Analects were the core texts. Calligraphy, poetry composition, history, and ritual were also central.', institutions:'The Imperial Academy (Taixue, founded 124 BCE) enrolled thousands of students. Private academies (shuyuan) proliferated. Confucius himself is the foundational figure of Chinese pedagogy.', literacy:'Perhaps 5–10% of the total population; higher among urban males. The scholar-gentry class maintained a near-monopoly on literacy for centuries.' }},
+  { r:['china','tang','song'], y:[600,1300], d:{ region:'Tang and Song Dynasty China', period:'Golden Age of Chinese civilisation', access:'The examination system was significantly expanded under the Tang and Song, drawing more candidates from the lesser gentry. Women remained excluded from formal public education.', curriculum:'Neo-Confucian philosophy (codified by Zhu Xi), poetry, calligraphy, history, and the Classics. Printing (invented in China) dramatically increased access to texts.', institutions:'The Imperial Academy, thousands of private shuyuan academies, and Buddhist monasteries as centres of literacy. Woodblock printing from the 7th century transformed book availability.', literacy:'Perhaps 10–20% among urban males in Song China — unusually high for a pre-modern society, partly due to cheap printed books.' }},
+  { r:['china','ming','qing'], y:[1300,1912], d:{ region:'Ming and Qing Dynasty China', period:'Late Imperial China', access:'The examination system continued to offer theoretical meritocratic access but in practice favoured those with years of private tutoring. Women had no access to state examinations; some elite women were privately educated.', curriculum:'The Eight-legged Essay (baguwen) format dominated examination preparation. Neo-Confucian classics, history, calligraphy, and poetry. Practical and scientific subjects were largely neglected.', institutions:'Thousands of shuyuan academies; the National Academy in Beijing. Jesuit missionaries introduced Western mathematics and astronomy at court. The examination system was finally abolished in 1905.', literacy:'Perhaps 30–45% of adult males by the late Qing, with significant rural–urban disparity. Female literacy very low except among elite families.' }},
+
+  // ── INDIA ──
+  { r:['india','maurya','gupta','mughal','delhi'], y:[-2000,600], d:{ region:'Ancient India (Vedic to Gupta Period)', period:'Vedic Age through the Gupta Golden Age', access:'The gurukul system required a student (shishya) to live with a teacher (guru). Access was structured by varna (caste): Brahmins received the fullest education; Shudras were largely excluded. Women were educated in some early Vedic traditions but increasingly excluded over time.', curriculum:'The Vedas, Upanishads, Sanskrit grammar (Panini\'s Ashtadhyayi), mathematics, astronomy (Aryabhata\'s contributions), medicine (Ayurveda), logic and philosophy.', institutions:'Taxila (Takshashila) and Nalanda were among the world\'s earliest universities, drawing students from China, Central Asia, and the Middle East. Nalanda at its peak housed over 10,000 students.', literacy:'Very low overall; literacy was concentrated among the Brahmin priestly class. Oral transmission of sacred texts was the primary educational method, not writing.' }},
+  { r:['india'], y:[1200,1750], d:{ region:'Sultanate and Mughal India', period:'Medieval Islamic India', access:'Maktab and madrasa education served Muslim boys; the traditional gurukul system continued for Hindus. Women of the Muslim elite could receive household education. The two systems largely coexisted without merging.', curriculum:'Muslims: Quran, Arabic and Persian literature, Islamic jurisprudence, mathematics. Hindus: Sanskrit texts, vedic ritual, mathematics, astronomy. Persian became the language of the Mughal court and administration.', institutions:'The Mughal court was a centre of scholarship; the Emperor Akbar commissioned major translations. Traditional Hindu pathshalas continued across the subcontinent alongside Islamic madrasas.', literacy:'Estimated 10–20% functional literacy among urban populations. Rural literacy much lower.' }},
+  { r:['india'], y:[1750,1947], d:{ region:'British India', period:'Colonial India', isColonial:true, indigenous:'Traditional gurukul and pathshala schools continued in villages teaching Sanskrit, arithmetic, and religious texts. Madrasa education served Muslim communities. These systems educated far more children than the colonial system initially did.', colonial:'The 1835 Macaulay Minute famously oriented British education toward producing English-speaking administrators. English-medium schools and universities (Calcutta, Bombay, Madras founded 1857) created a Western-educated elite. Mass education was largely neglected until the late colonial period.' }},
+
+  // ── JAPAN ──
+  { r:['japan'], y:[-500,1600], d:{ region:'Imperial and Medieval Japan', period:'Nara to Sengoku Period', access:'The Chinese-style university (Daigaku-ryō) served the sons of the court aristocracy. Buddhist monasteries provided literacy for clergy and occasionally commoners. Samurai education emphasised martial skills alongside some literacy.', curriculum:'Chinese Confucian classics, Chinese writing (kanji), Buddhist sutras, poetry, and court ritual. The kana syllabaries (hiragana, katakana) developed for Japanese vernacular writing.', institutions:'The Daigaku-ryō imperial university (founded 701 CE) trained court officials. Buddhist temples such as Kōfuku-ji and Enryaku-ji were major educational centres. Women of the court were often highly literate in Japanese kana.', literacy:'Perhaps 5–15% among aristocratic and urban males; broader literacy relatively limited. Court women were sometimes more literate in Japanese than men who prioritised Chinese.' }},
+  { r:['japan'], y:[1600,1868], d:{ region:'Edo-Period Japan (Tokugawa Shogunate)', period:'Edo Period', access:'The terakoya (temple schools) opened literacy to boys and girls across social classes — a remarkable feature by pre-modern standards. Samurai had their own domain schools (hanko). Commoners gained increasing access over the period.', curriculum:'Reading, writing, arithmetic (soroban abacus), calligraphy, and Confucian ethics. Samurai schools added Chinese classics, martial arts, and statecraft.', institutions:'By 1868 there were over 15,000 terakoya schools across Japan. The Shōheikō in Edo was the leading Confucian academy. Private rangaku (Dutch Learning) schools introduced Western science.', literacy:'By the late Edo period, male literacy was perhaps 40–50% and female literacy 15–20% — among the highest rates in the pre-industrial world.' }},
+
+  // ── ISLAMIC WORLD / ARABIA ──
+  { r:['arabia','saudi','caliphate','abbasid','umayyad','yemen'], y:[600,1500], d:{ region:'Islamic Caliphate (Umayyad–Abbasid)', period:'Golden Age of Islam', access:'Any free Muslim male could attend mosque schools and madrasas; the system was genuinely more open to talent across class than most contemporary systems. Women scholars existed but were uncommon; some hadith scholars were female.', curriculum:'Quran and hadith, Arabic grammar and rhetoric, Islamic jurisprudence, theology (kalam), mathematics, astronomy, medicine, and philosophy. Greek texts were translated into Arabic en masse.', institutions:'The House of Wisdom (Bayt al-Hikma) in Baghdad was the greatest scholarly institution of the medieval world. Al-Azhar (Cairo, 970 CE), the Nizamiyya schools, and thousands of local madrasas formed the network.', literacy:'Urban male literacy perhaps 20–30% across the Islamic heartlands — higher than contemporary Europe. The relatively accessible Arabic script supported wider literacy.' }},
+
+  // ── WEST AFRICA / MALI ──
+  { r:['mali','ghana','songhai','senegal','guinea','niger','burkina'], y:[800,1600], d:{ region:'Mali and Songhai Empires', period:'West African Islamic Medieval Period', access:'Islamic education through Quranic schools reached both urban and rural populations across the Sahel. Boys and girls learned Quran; advanced Islamic scholarship was largely male. Indigenous oral educational traditions ran in parallel.', curriculum:'Quranic memorisation, Arabic literacy, Islamic law and theology. Indigenous education covered farming, crafts, oral history, and governance through apprenticeship and initiation rites.', institutions:'Timbuktu was a major centre of Islamic scholarship with three great mosques (Sankore, Djinguereber, Sidi Yahia) functioning as universities. An estimated 25,000 students studied there at its peak.', literacy:'Quranic literacy widespread among males in cities; Arabic literacy for advanced scholars perhaps 5–10% of urban population. Indigenous knowledge transmitted orally.' }},
+
+  // ── EUROPE / MEDIEVAL ──
+  { r:['france','frankish','carolingian'], y:[500,1000], d:{ region:'Frankish Kingdom / Carolingian Empire', period:'Early Medieval Europe', access:'The Carolingian Renaissance under Charlemagne attempted to spread literacy among clergy and nobles. Cathedral and monastery schools served a tiny elite. The vast majority of the peasant population had no formal education.', curriculum:'The trivium (grammar, rhetoric, logic) and quadrivium (arithmetic, geometry, music, astronomy) based on classical models. Latin was the language of learning and the Church.', institutions:'The Palace School at Aachen under Alcuin of York; cathedral schools at Reims, Paris, and Chartres; Benedictine monasteries as centres of manuscript copying and learning.', literacy:'Perhaps 1–5% of the total population; higher among clergy. Charlemagne himself reportedly learned to read as an adult.' }},
+  { r:['france'], y:[1000,1600], d:{ region:'Kingdom of France', period:'High Medieval to Renaissance France', access:'Cathedral schools and early universities drew sons of the clergy, nobility, and emerging urban bourgeoisie. Girls were educated in convents or by private tutors in wealthy households.', curriculum:'Theology, law, medicine, and the seven liberal arts at university level. Elementary parish schools taught basic Latin literacy and catechism.', institutions:'The University of Paris (founded c. 1150) was the greatest centre of theological learning in Europe. The Sorbonne (1257) specialised in theology. Over 30 French cities had universities by 1500.', literacy:'Perhaps 5–10% total; rising to 20–30% in cities by 1500. The printing press arrived in France in 1470 and began to transform literacy.' }},
+  { r:['france'], y:[1600,1900], d:{ region:'Kingdom of France / French Republic', period:'Ancien Régime to Revolution', access:'Jesuit collèges educated sons of the nobility and bourgeoisie; parish schools served boys of modest means. The Revolution introduced the principle of universal public education. Napoleonic lycées standardised elite education.', curriculum:'Latin, rhetoric, philosophy, mathematics, and natural sciences in Jesuit colleges. The Enlightenment promoted reason, science, and civic education. Post-Revolution: republican values, French language, mathematics.', institutions:'The Collège de France (1530), Jesuit colleges across France, the École Polytechnique (1794) and the grandes écoles system established France\'s educational infrastructure.', literacy:'About 30% at the time of the Revolution; rising rapidly thereafter as the state expanded schooling.' }},
+  { r:['england','britain','united kingdom'], y:[500,1600], d:{ region:'England / Kingdom of Britain', period:'Anglo-Saxon to Tudor Period', access:'Monastic and cathedral schools served clergy and noble sons. Grammar schools (free for local boys in theory) spread from the 14th century. Girls of noble families received household education; most women were illiterate.', curriculum:'Latin grammar, theology, logic and rhetoric at school level; the seven liberal arts at Oxford and Cambridge. Vernacular literacy in English grew significantly after the 14th century.', institutions:'Oxford (c. 1096) and Cambridge (1209) were the two English universities. Winchester (1382) and Eton (1440) were among the first grammar schools. Monasteries were the main literate institutions before the Reformation.', literacy:'Perhaps 5% overall in 1400; rising to 20–30% among urban males by 1600 following the Reformation\'s emphasis on Bible reading.' }},
+  { r:['england','britain','united kingdom'], y:[1600,1900], d:{ region:'Britain (Stuart to Victorian)', period:'Early Modern to Industrial Britain', access:'Grammar schools and charity schools opened education to the middle classes. The Industrial Revolution created demand for basic literacy among workers. Sunday Schools reached the poor. Women\'s access to education was highly restricted until the late 19th century.', curriculum:'Classical languages in elite schools; reading, writing, arithmetic, and religion in charity and Sunday schools. The public school curriculum (Rugby, Eton) emphasised classics, character, and sport.', institutions:'The "public schools" (Eton, Harrow, Rugby), Dissenting academies, Oxford and Cambridge (reformed from the 1850s), and from 1870 universal elementary schools under the Forster Education Act.', literacy:'About 60% in 1800; rising to nearly universal basic literacy by 1900 following compulsory schooling laws.' }},
+
+  // ── GERMANY ──
+  { r:['germany','prussia','holy roman','saxon'], y:[1400,1900], d:{ region:'Germany / Prussia', period:'Reformation to Imperial Germany', access:'The Protestant Reformation made literacy a religious duty, dramatically expanding boys\' schooling. Prussia introduced compulsory education in 1763 — one of the first nations to do so. Girls\' schooling lagged but expanded through the 19th century.', curriculum:'Luther\'s catechism and Bible reading, Latin in grammar schools, and from the 18th century mathematics, natural sciences, and German history. The humanist Gymnasium emphasised classical languages.', institutions:'The University of Berlin (1810, founded by Humboldt) created the modern research university model. Prussia\'s Gymnasium and Volksschule systems became international models. Over 90% of children were in school by 1870.', literacy:'About 50% in 1800; nearly universal by 1870, the highest rate in Europe. Prussia\'s education system was widely admired and imitated.' }},
+
+  // ── SPAIN ──
+  { r:['spain','castile','aragon','iberia'], y:[700,1600], d:{ region:'Medieval Iberia / Spain', period:'Reconquista to Golden Age', access:'Christian cathedral schools and Islamic madrasas coexisted during the convivencia period. After the Reconquista, Jesuit colleges educated the Catholic elite. Jews maintained their own educational networks until the 1492 expulsion.', curriculum:'Toledo\'s translation school rendered Arabic and Greek texts into Latin, transmitting Islamic science to Europe. Catholic curriculum: Latin, theology, rhetoric. Jewish curriculum: Torah, Talmud, Hebrew.', institutions:'The University of Salamanca (1218) was one of Europe\'s oldest and most prestigious. The Toledo School of Translators was crucial to the transmission of classical and Islamic knowledge to Christian Europe.', literacy:'Perhaps 10–20% among urban males in the kingdom of Castile by 1500; lower in rural areas.' }},
+
+  // ── AZTEC / MEXICO ──
+  { r:['mexico','aztec','new spain'], y:[-500,1521], d:{ region:'Aztec Empire (Triple Alliance)', period:'Post-Classic Mesoamerica', access:'The telpochcalli (school of commoners) educated all boys regardless of class — unusually egalitarian for the ancient world. The calmecac trained priests and nobles in higher learning. Girls attended separate schools focused on weaving and household management.', curriculum:'History, astronomy, calendar keeping, warfare, agriculture, and music in the telpochcalli. The calmecac added ritual, astronomy, writing (pictographic), divination, and law.', institutions:'Every Aztec city-state had both telpochcalli and calmecac schools. Compulsory education for boys was law — making the Aztecs among the earliest to mandate universal male schooling.', literacy:'Pictographic script was readable by many; full scribal literacy was restricted to trained specialists, perhaps 5–10% of the population.' }},
+  { r:['mexico','new spain'], y:[1521,1820], d:{ region:'New Spain (Colonial Mexico)', period:'Spanish Colonial Mexico', isColonial:true, indigenous:'Aztec telpochcalli and calmecac schools were dismantled within decades of conquest. Indigenous knowledge — calendrics, astronomy, agriculture, oral history — survived through family transmission and some early Franciscan documentation, but the institutional system was destroyed.', colonial:'Franciscan, Dominican, and Jesuit missionaries established schools for Indigenous children to learn Spanish, Christian doctrine, and European crafts. The University of Mexico (1551) was the first in the Americas, though it served Spanish settlers and a small creole elite.' }},
+
+  // ── INCA / PERU ──
+  { r:['peru','inca'], y:[-500,1532], d:{ region:'Inca Empire (Tawantinsuyu)', period:'Late Horizon Andean Civilisation', access:'The yachayhuasi (houses of knowledge) in Cusco trained sons of the Inca nobility and curacas (local lords). Commoners received practical education through family and community. The acllahuasi educated chosen women (acllacuna) for religious and court service.', curriculum:'Quipu (knotted string record-keeping), oral history, astronomy, religion, administration, and military skills for the nobility. Practical agriculture, weaving, and crafts for commoners.', institutions:'The yachayhuasi in Cusco; the network of acllahuasi throughout the empire. The amautas (wise men) were the teachers and keepers of oral historical tradition.', literacy:'No writing system in the alphabetic sense; the quipu recorded numerical and possibly narrative information. All knowledge transmission was oral or through the quipu.' }},
+
+  // ── RUSSIA ──
+  { r:['russia','muscovy','soviet'], y:[900,1700], d:{ region:'Kievan Rus and Muscovite Russia', period:'Medieval Russia', access:'Orthodox monasteries provided education almost exclusively for clergy and the boyar nobility. Most of the population — serfs comprising the vast majority — had no formal education whatsoever.', curriculum:'Church Slavonic, theology, and Biblical texts. Latin was largely absent, setting Russia apart from Western European educational traditions. Mathematics and natural philosophy had little presence.', institutions:'The Kiev-Mohyla Academy (1632) was the first institution of higher learning in Eastern Slavic lands. Monasteries in Moscow, Novgorod, and Kiev maintained scriptoria and schools.', literacy:'Perhaps 1–3% of the total population; concentrated entirely in the clergy and upper nobility.' }},
+  { r:['russia','soviet'], y:[1700,1991], d:{ region:'Russian Empire / Soviet Union', period:'Imperial to Soviet Russia', access:'Peter the Great\'s reforms created secular technical schools for the nobility. The Soviet period (from 1917) made universal literacy a state priority, achieving near-universal literacy by 1940. Gender equality in education was a stated Soviet principle.', curriculum:'Imperial Russia: classical and military education for elites; religious basics for the few commoners in school. Soviet: Marxist-Leninist ideology, mathematics, sciences, technical skills, physical education.', institutions:'Moscow State University (1755); the vast Soviet network of comprehensive polytechnic schools (desyatiletka); specialised technical institutes (tekhnikumy). UNESCO praised Soviet literacy achievements.', literacy:'About 20% in 1900; 87% by 1939 and nearly universal by 1960 — one of history\'s fastest literacy expansions.' }},
+
+  // ── USA ──
+  { r:['united states','usa','america'], y:[1600,1865], d:{ region:'Colonial & Early United States', period:'Colonial to Antebellum America', access:'New England Puritans created the first public school system in the Western world (1647 "Old Deluder Satan" Act). Southern states had plantation-based private tutoring for white elites. Enslaved African Americans were legally prohibited from learning to read in many states.', curriculum:'Reading, writing, arithmetic, and Protestant Christian catechism at the elementary level. Harvard (1636) and other early colleges: theology, classical languages, law.', institutions:'Harvard (1636), William & Mary (1693), Yale (1701) were the first colleges. The one-room schoolhouse was the typical primary institution. Sunday schools reached the urban poor.', literacy:'Perhaps 60–70% among white adult males by 1800; very low among women and nearly non-existent among enslaved people by legal prohibition.' }},
+  { r:['united states','usa'], y:[1865,2024], d:{ region:'United States of America', period:'Reconstruction to Contemporary', access:'The post-Civil War period brought expanded schooling for Black Americans, though segregated until Brown v. Board of Education (1954). The GI Bill (1944) dramatically expanded university access. Title IX (1972) equalised female participation.', curriculum:'Progressive education reforms (Dewey) introduced child-centred learning. The 20th century added sciences and vocational training. The post-Sputnik era emphasised mathematics and science. Contemporary: STEM, standardised testing (No Child Left Behind 2001).', institutions:'The public school system, the Ivy League and land-grant universities (Morrill Act 1862), HBCUs (Historically Black Colleges and Universities), and the vast community college network.', literacy:'Near-universal basic literacy by 1900. The US had the world\'s highest university enrolment rate through much of the 20th century.' }},
+
+  // ── SUB-SAHARAN AFRICA ──
+  { r:['nigeria','ghana','benin','yoruba','igbo'], y:[-500,1800], d:{ region:'West African Kingdoms (Benin, Yoruba states)', period:'Pre-Colonial West Africa', access:'Education was primarily through apprenticeship, initiation rites, and oral transmission. Age-grade societies structured communal learning. Islamic education through Quranic schools reached the north of the region. Girls and boys received different but equally structured informal education.', curriculum:'Oral history, proverbs and philosophy, agricultural and craft skills, governance, warfare, medicine, and spiritual knowledge. In Islamised areas: Quran, Arabic literacy, Islamic law.', institutions:'Guilds of craftspeople, age-grade societies, the Ogboni and other secret societies, and Islamic scholars (mallams) all served educational functions. Timbuktu\'s influence reached into northern Nigeria.', literacy:'Arabic literacy perhaps 5–15% in the Muslim north; non-alphabetic literacy in the south. Oral knowledge transmission was of extremely high quality and sophistication.' }},
+
+  // ── MONGOLIA ──
+  { r:['mongolia','mongol'], y:[1200,1400], d:{ region:'Mongol Empire', period:'Height of the Mongol Empire', access:'Mongol education was primarily oral and practical — horsemanship, archery, survival skills, and memorisation of genealogies and epic poetry. Conquered peoples\' scholars were employed and protected. Literacy was initially rare among the Mongols themselves.', curriculum:'The Mongols adopted writing using the Uyghur script under Genghis Khan. Administration of the empire required multilingual scribes drawn from conquered peoples. Buddhist and Islamic scholarship was patronised at the courts of various khanates.', institutions:'The Mongol court relied on Nestorian Christian, Buddhist, Confucian, and Islamic scholars simultaneously. The Pax Mongolica facilitated the transfer of knowledge across Eurasia.', literacy:'Very low among native Mongols; high tolerance for diverse literate traditions in conquered territories.' }},
+];
+
+function lookupOffline(name,yr) {
+  const n = name.toLowerCase();
+  let best = null, bestScore = -1;
+  for (const e of OFFLINE) {
+    const nameMatch = e.r.some(r => n.includes(r) || r.includes(n.split(' ')[0]));
+    if (!nameMatch) continue;
+    const [yMin,yMax] = e.y;
+    const inRange = yr>=yMin && yr<=yMax;
+    const dist = inRange ? 0 : Math.min(Math.abs(yr-yMin), Math.abs(yr-yMax));
+    const score = (inRange ? 1000 : 0) - dist;
+    if (score > bestScore) { bestScore = score; best = e; }
+  }
+  return best ? best.d : null;
+}
+
+// ── API CALL (via secure Vercel proxy) ───────────────────────────────────────
+async function callAPI(name,yr,label,cacheKey) {
+  // Try offline dataset first
+  const offline = lookupOffline(name, yr);
+  if (offline) {
+    const edu = { ...offline };
+    if (!edu.region) edu.region = name;
+    if (!edu.period) edu.period = label;
+    if (edu.region) cRegion.textContent = edu.region;
+    if (edu.period) cPeriod.textContent = edu.period;
+    eduCache[cacheKey] = edu;
+    renderCard(edu);
+    return;
+  }
+  // Fall back to proxy
+  try {
+    const res = await fetch('/api/claude', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 900,
+        system: 'You are a specialist historian of global education. Return ONLY valid JSON — no markdown fences, no preamble.',
+        messages: [{
+          role: 'user',
+          content: `Educational history for "${name}" around ${label}. Return ONLY this JSON: {"region":"...","period":"...","access":"...","curriculum":"...","institutions":"...","literacy":"...","isColonial":false,"indigenous":null,"colonial":null}`
+        }]
+      })
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    const edu = JSON.parse(
+      data.content?.find(b => b.type === 'text')?.text
+        ?.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim() || '{}'
+    );
+    if (edu.region) cRegion.textContent = edu.region;
+    if (edu.period) cPeriod.textContent = edu.period;
+    eduCache[cacheKey] = edu;
+    renderCard(edu);
+    return;
+  } catch(e) {
+    console.error(e);
+  }
+  // Nothing matched and proxy failed
+  cBody.innerHTML=`<div class="cf"><div class="cf-val" style="font-style:italic;opacity:.55;font-family:'EB Garamond',serif;">
+    No records in the archive for this region at this time. Try a major civilisation or a different era.
+  </div></div>`;
+}
+
+function renderCard(edu) {
+  let h=field('Who Had Access',edu.access)+field('What Was Taught',edu.curriculum)+field('Key Institutions',edu.institutions)+field('Literacy & Enrolment',edu.literacy);
+  if(edu.isColonial&&edu.indigenous&&edu.colonial) {
+    colData={indigenous:edu.indigenous,colonial:edu.colonial};
+    h+=`<div class="ctabs"><button class="ctab on" id="ctab-i" onclick="switchTab('indigenous')">Indigenous</button><button class="ctab" id="ctab-c" onclick="switchTab('colonial')">Colonial</button></div><div class="ccontent" id="ccont">${edu.indigenous}</div>`;
+  }
+  cBody.innerHTML=h;
+}
+function field(l,v) { return `<div class="cf"><div class="cf-lbl">${l}</div><div class="cf-val">${v||'—'}</div></div>`; }
+window.switchTab=function(w) {
+  if(!colData) return;
+  document.getElementById('ctab-i').classList.toggle('on',w==='indigenous');
+  document.getElementById('ctab-c').classList.toggle('on',w==='colonial');
+  document.getElementById('ccont').textContent=colData[w];
+};
+window.closeCard=function() { card.classList.remove('show'); };
+
+// ── TIMELINE ─────────────────────────────────────────────────────────────────
+const thumb=document.getElementById('thumb');
+const trackFill=document.getElementById('track-fill');
+const yearDisp=document.getElementById('year-display');
+const eraBandsEl=document.getElementById('era-bands');
+const eraNameEl=document.getElementById('era-name');
+const scrubWrap=document.getElementById('scrub-wrap');
+
+ERAS.forEach(er=>{
+  const s=document.createElement('div');
+  s.className='era-seg'; s.style.cssText=`width:${(er.e-er.s)/RANGE*100}%;background:${er.c}`;
+  eraBandsEl.appendChild(s);
+});
+function fracToYr(f){ return Math.round(MIN_YR+Math.max(0,Math.min(1,f))*RANGE); }
+function setThumb(f) {
+  f=Math.max(0,Math.min(1,f));
+  thumb.style.left=(f*100)+'%'; trackFill.style.width=(f*100)+'%';
+  curYear=fracToYr(f); yearDisp.textContent=yrLabel(curYear); eraNameEl.textContent=getEra(curYear);
+}
+function scrubFrac(e){ const r=scrubWrap.getBoundingClientRect(); return ((e.clientX||0)-r.left)/r.width; }
+setThumb(0);
+thumb.addEventListener('mousedown',e=>{ dragging=true; thumb.classList.add('drag'); e.preventDefault(); });
+document.addEventListener('mousemove',e=>{ if(!dragging) return; setThumb(scrubFrac(e)); clearTimeout(loadTimer); loadTimer=setTimeout(()=>loadYear(curYear),300); });
+document.addEventListener('mouseup',()=>{ if(!dragging) return; dragging=false; thumb.classList.remove('drag'); loadYear(curYear); });
+scrubWrap.addEventListener('click',e=>{ if(e.target===thumb) return; setThumb(scrubFrac(e)); loadYear(curYear); });
+
+// ── YEAR LOAD ────────────────────────────────────────────────────────────────
+const fadeEl=document.getElementById('fade');
+async function loadYear(yr) {
+  const ny=nearestYr(yr); if(ny===lastMapYear) return;
+  lastMapYear=ny; fadeEl.classList.add('on');
+  renderGeo(await fetchGeo(yr));
+  setTimeout(()=>fadeEl.classList.remove('on'),80);
+}
+
+// ── START ────────────────────────────────────────────────────────────────────
+async function startApp() {
+  const ov=document.getElementById('map-load');
+  try { renderGeo(await loadFallback()); } catch(e) {}
+  ov.classList.add('gone'); setTimeout(()=>ov.remove(),700);
+  const geo=await fetchGeo(MIN_YR);
+  if(geo&&geo!==geoCache.__fb) renderGeo(geo);
+  lastMapYear=nearestYr(MIN_YR);
+  const hint=document.getElementById('hint');
+  setTimeout(()=>{ hint.style.opacity='0'; setTimeout(()=>hint?.remove(),1000); },7000);
+}
+
+startApp();
+
+window.addEventListener('resize',()=>{
+  const nW=window.innerWidth,nH=window.innerHeight-100;
+  svg.attr('width',nW).attr('height',nH).attr('viewBox',`0 0 ${nW} ${nH}`);
+  proj.scale(nW/6.3).translate([nW/2,nH/2]);
+  gRoot.select('.sphere').attr('d',gPath);
+  gRoot.select('.gratline').attr('d',gPath);
+  gLand.selectAll('.land').attr('d',gPath);
+});
+</script>
+</body>
+</html>
