@@ -82,8 +82,8 @@ html,body { width:100%;height:100%;overflow:hidden;background:var(--bg); }
 .era-seg     { height:100%; }
 #track       { position:absolute;left:0;right:0;height:2px;background:rgba(200,168,75,.1);top:50%;transform:translateY(-50%); }
 #track-fill  { height:100%;background:linear-gradient(to right,#6e500d,var(--gold));width:0%; }
-#thumb { position:absolute;width:18px;height:18px;border-radius:50%;background:radial-gradient(circle at 35% 35%,var(--gold-hi),var(--gold));top:50%;transform:translate(-50%,-50%);left:0%;cursor:ew-resize;box-shadow:0 0 12px var(--gold-glow),0 0 24px rgba(200,168,75,.15);z-index:3; }
-#thumb::after { content:'';position:absolute;inset:5px;background:var(--bg);border-radius:50%; }
+#thumb { position:absolute;width:28px;height:28px;border-radius:50%;background:radial-gradient(circle at 35% 35%,var(--gold-hi),var(--gold));top:50%;transform:translate(-50%,-50%);left:0%;cursor:ew-resize;box-shadow:0 0 12px var(--gold-glow),0 0 24px rgba(200,168,75,.15);z-index:3;touch-action:none; }
+#thumb::after { content:'';position:absolute;inset:7px;background:var(--bg);border-radius:50%; }
 #thumb:hover,#thumb.drag { box-shadow:0 0 18px var(--gold-glow),0 0 36px rgba(200,168,75,.3); }
 #era-lbls  { position:absolute;bottom:-17px;left:0;right:0;display:flex;justify-content:space-between; }
 .era-lbl   { font-family:'EB Garamond',serif;font-size:.56rem;color:rgba(168,148,96,.38);letter-spacing:.08em; }
@@ -352,12 +352,24 @@ function setThumb(f) {
   thumb.style.left=(f*100)+'%'; trackFill.style.width=(f*100)+'%';
   curYear=fracToYr(f); yearDisp.textContent=yrLabel(curYear); eraNameEl.textContent=getEra(curYear);
 }
-function scrubFrac(e){ const r=scrubWrap.getBoundingClientRect(); return ((e.clientX||0)-r.left)/r.width; }
+function scrubFrac(e){
+  const r=scrubWrap.getBoundingClientRect();
+  const clientX = e.touches ? e.touches[0].clientX : (e.clientX||0);
+  return (clientX-r.left)/r.width;
+}
 setThumb(0);
+
+// Mouse events
 thumb.addEventListener('mousedown',e=>{ dragging=true; thumb.classList.add('drag'); e.preventDefault(); });
 document.addEventListener('mousemove',e=>{ if(!dragging) return; setThumb(scrubFrac(e)); clearTimeout(loadTimer); loadTimer=setTimeout(()=>loadYear(curYear),300); });
 document.addEventListener('mouseup',()=>{ if(!dragging) return; dragging=false; thumb.classList.remove('drag'); loadYear(curYear); });
 scrubWrap.addEventListener('click',e=>{ if(e.target===thumb) return; setThumb(scrubFrac(e)); loadYear(curYear); });
+
+// Touch events
+thumb.addEventListener('touchstart',e=>{ dragging=true; thumb.classList.add('drag'); e.preventDefault(); },{passive:false});
+document.addEventListener('touchmove',e=>{ if(!dragging) return; e.preventDefault(); setThumb(scrubFrac(e)); clearTimeout(loadTimer); loadTimer=setTimeout(()=>loadYear(curYear),300); },{passive:false});
+document.addEventListener('touchend',()=>{ if(!dragging) return; dragging=false; thumb.classList.remove('drag'); loadYear(curYear); });
+scrubWrap.addEventListener('touchstart',e=>{ if(e.target===thumb) return; setThumb(scrubFrac(e)); loadYear(curYear); },{passive:true});
 
 const fadeEl=document.getElementById('fade');
 async function loadYear(yr) {
