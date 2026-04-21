@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Carta Educationis — Edu[Something]</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:        #06090f;
+    --bg-mid:    #0a0e18;
+    --ocean:     #0c1e30;
+    --gold:      #c8a84b;
+    --gold-hi:   #e8cc7a;
+    --gold-glow: rgba(200,168,75,0.4);
+    --parch-d:   #a8946a;
+    --text:      #cbbf98;
+    --card-bg:   rgba(5,8,15,0.97);
+    --border:    rgba(200,168,75,0.2);
+    --border-b:  rgba(200,168,75,0.55);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'EB Garamond', serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Noise texture */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.045'/%3E%3C/svg%3E");
+    background-size: 200px;
+    pointer-events: none;
+    z-index: 1000;
+    opacity: 0.4;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(6,9,15,0.9);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .nav-home {
+    font-family: 'Cinzel', serif;
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    color: var(--parch-d);
+    text-decoration: none;
+    text-transform: uppercase;
+    transition: color 0.2s;
+  }
+
+  .nav-home:hover { color: var(--gold); }
+
+  .nav-title {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: 0.75rem;
+    color: var(--gold);
+    letter-spacing: 0.25em;
+    text-shadow: 0 0 20px var(--gold-glow);
+  }
+
+  /* ── HERO ── */
+  .hero {
+    padding: 8rem 2rem 4rem;
+    text-align: center;
+    position: relative;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .hero::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 300px;
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--gold), transparent);
+  }
+
+  .hero-label {
+    font-family: 'Cinzel', serif;
+    font-size: 0.6rem;
+    letter-spacing: 0.3em;
+    color: var(--parch-d);
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+    opacity: 0.7;
+  }
+
+  .hero-title {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: clamp(1.5rem, 5vw, 3rem);
+    color: var(--gold);
+    letter-spacing: 0.3em;
+    text-shadow: 0 0 60px var(--gold-glow), 0 0 120px rgba(200,168,75,0.08);
+    margin-bottom: 1rem;
+    line-height: 1.3;
+  }
+
+  .hero-subtitle {
+    font-family: 'EB Garamond', serif;
+    font-style: italic;
+    font-size: 1rem;
+    color: var(--parch-d);
+    letter-spacing: 0.15em;
+    margin-bottom: 3rem;
+  }
+
+  /* ── CTA BUTTON ── */
+  .cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-family: 'Cinzel', serif;
+    font-size: 0.65rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--bg);
+    background: var(--gold);
+    padding: 0.85rem 2rem;
+    text-decoration: none;
+    transition: background 0.2s, box-shadow 0.2s, transform 0.2s;
+  }
+
+  .cta:hover {
+    background: var(--gold-hi);
+    box-shadow: 0 0 30px var(--gold-glow);
+    transform: translateY(-2px);
+  }
+
+  .cta-ghost {
+    background: transparent;
+    color: var(--gold);
+    border: 1px solid var(--border-b);
+  }
+
+  .cta-ghost:hover {
+    background: rgba(200,168,75,0.08);
+    color: var(--gold-hi);
+  }
+
+  /* ── CONTENT ── */
+  .content {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 5rem 2rem;
+  }
+
+  .section-rule {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin-bottom: 2.5rem;
+  }
+
+  .section-rule::before,
+  .section-rule::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--border-b));
+  }
+
+  .section-rule::after {
+    background: linear-gradient(to left, transparent, var(--border-b));
+  }
+
+  .section-rule span {
+    font-family: 'Cinzel', serif;
+    font-size: 0.55rem;
+    letter-spacing: 0.3em;
+    color: var(--gold);
+    text-transform: uppercase;
+    opacity: 0.7;
+    white-space: nowrap;
+  }
+
+  .prose p {
+    font-size: 1.15rem;
+    line-height: 1.9;
+    color: var(--text);
+    margin-bottom: 1.5rem;
+  }
+
+  .prose p:last-child { margin-bottom: 0; }
+
+  .prose strong {
+    color: var(--gold);
+    font-weight: 500;
+  }
+
+  /* ── SCREENSHOTS ── */
+  .screenshots {
+    margin: 4rem 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+  }
+
+  .screenshot {
+    border: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .screenshot::before {
+    content: '';
+    display: block;
+    height: 2px;
+    background: linear-gradient(to right, transparent, var(--gold), transparent);
+  }
+
+  .screenshot img {
+    width: 100%;
+    display: block;
+    filter: brightness(0.95);
+    transition: filter 0.3s;
+  }
+
+  .screenshot:hover img { filter: brightness(1); }
+
+  .screenshot-caption {
+    padding: 0.75rem 1rem;
+    font-family: 'Cinzel', serif;
+    font-size: 0.55rem;
+    letter-spacing: 0.2em;
+    color: var(--parch-d);
+    text-transform: uppercase;
+    opacity: 0.6;
+    border-top: 1px solid var(--border);
+    background: rgba(5,8,15,0.6);
+  }
+
+  /* ── BOTTOM CTA ── */
+  .bottom-cta {
+    padding: 5rem 2rem;
+    text-align: center;
+    border-top: 1px solid var(--border);
+    position: relative;
+  }
+
+  .bottom-cta::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 300px;
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--gold), transparent);
+  }
+
+  .bottom-cta p {
+    font-family: 'EB Garamond', serif;
+    font-style: italic;
+    font-size: 1.1rem;
+    color: var(--parch-d);
+    letter-spacing: 0.1em;
+    margin-bottom: 2rem;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    padding: 2rem;
+    text-align: center;
+    border-top: 1px solid var(--border);
+  }
+
+  .footer-link {
+    font-family: 'Cinzel', serif;
+    font-size: 0.6rem;
+    letter-spacing: 0.25em;
+    color: var(--parch-d);
+    text-decoration: none;
+    text-transform: uppercase;
+    opacity: 0.4;
+    transition: opacity 0.2s;
+  }
+
+  .footer-link:hover { opacity: 1; }
+
+  /* ── CORNER DECORATIONS ── */
+  .corner {
+    position: absolute;
+    width: 36px;
+    height: 36px;
+    pointer-events: none;
+    opacity: 0.3;
+  }
+
+  .tl { top: 88px; left: 16px; }
+  .tr { top: 88px; right: 16px; transform: scaleX(-1); }
+
+  /* ── ANIMATIONS ── */
+  .reveal {
+    opacity: 0;
+    transform: translateY(16px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a class="nav-home" href="index.html">← Edu[Something]</a>
+  <span class="nav-title">Carta Educationis</span>
+</nav>
+
+<!-- Corner decorations -->
+<svg class="corner tl" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M2 2 L2 18 M2 2 L18 2" stroke="#c8a84b" stroke-width="1.5"/>
+  <path d="M2 2 L8 8" stroke="#c8a84b" stroke-width="0.5" opacity="0.5"/>
+</svg>
+<svg class="corner tr" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M2 2 L2 18 M2 2 L18 2" stroke="#c8a84b" stroke-width="1.5"/>
+  <path d="M2 2 L8 8" stroke="#c8a84b" stroke-width="0.5" opacity="0.5"/>
+</svg>
+
+<!-- HERO -->
+<section class="hero">
+  <p class="hero-label">History of Education</p>
+  <h1 class="hero-title">Carta Educationis</h1>
+  <p class="hero-subtitle">A History of Human Learning · 2000 BC — Present</p>
+  <a href="carta-educationis.html" class="cta">Open the Map →</a>
+</section>
+
+<!-- CONTENT -->
+<main class="content">
+
+  <div class="section-rule reveal"><span>About</span></div>
+
+  <div class="prose reveal">
+    <p>
+      Education is not a modern invention. Across every era and every part of the world, human societies have developed ways of passing knowledge and skills from one generation to the next — through temples, oral traditions, madrasas, guilds, village schools, and imperial academies. The forms it has taken are remarkably varied.
+    </p>
+    <p>
+      <strong>Carta Educationis</strong> is an interactive map of education through history. Choose a period using the dial, hover over a region, and explore what learning looked like there and then — who it was for, how it was organised, and what it valued.
+    </p>
+  </div>
+
+  <!-- Screenshots -->
+  <div class="screenshots">
+
+    <div class="screenshot reveal">
+      <img src="screenshots/carta-1.png" alt="Carta Educationis — world map at 2000 BC">
+      <div class="screenshot-caption">The world at 2000 BC — Bronze Age civilisations</div>
+    </div>
+
+    <div class="screenshot reveal">
+      <img src="screenshots/carta-2.png" alt="Carta Educationis — Britain in 1863">
+      <div class="screenshot-caption">Britain 1863 AD — Stuart to Victorian education</div>
+    </div>
+
+    <div class="screenshot reveal">
+      <img src="screenshots/carta-3.png" alt="Carta Educationis — Egypt 2000 BC">
+      <div class="screenshot-caption">Egypt 2000 BC — Scribal schools and Houses of Life</div>
+    </div>
+
+  </div>
+
+  <div class="section-rule reveal"><span>Why this matters</span></div>
+
+  <div class="prose reveal">
+    <p>
+      The history of education is a history of human ingenuity. Long before formal schooling existed, communities found ways to teach what mattered to them — whether that was agriculture, philosophy, scripture, craft, or statecraft. Looking at that history in full, across all its geographical variety, gives us a richer picture of what education actually is and what it can be.
+    </p>
+    <p>
+      For education students, Carta Educationis offers a starting point for exploring the historical context behind the ideas and systems they encounter in their studies.
+    </p>
+  </div>
+
+</main>
+
+<!-- BOTTOM CTA -->
+<div class="bottom-cta">
+  <p>Explore education across time and place</p>
+  <a href="carta-educationis.html" class="cta">Open the Map →</a>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <a class="footer-link" href="index.html">← Back to Edu[Something]</a>
+</footer>
+
+<script>
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry, i) => {
+      if (entry.isIntersecting) {
+        setTimeout(() => entry.target.classList.add('visible'), i * 100);
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1 });
+  reveals.forEach(el => observer.observe(el));
+</script>
+
+</body>
+</html>
