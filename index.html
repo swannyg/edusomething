@@ -166,30 +166,37 @@
   .buzzword-wrap {
     display: inline-block;
     overflow: hidden;
-    vertical-align: bottom;
-    height: 1.05em;
+    vertical-align: top;
+    height: 1.3em;
     line-height: 1.05;
   }
 
   .buzzword-inner {
     display: flex;
     flex-direction: column;
-    animation: cycleBuzz 9s ease-in-out infinite;
+    animation: cycleBuzz 33s ease-in-out infinite;
   }
 
   .buzzword-inner span {
     display: block;
-    height: 1.05em;
+    height: 1.3em;
     line-height: 1.05;
+    padding-bottom: 0.25em;
   }
 
   @keyframes cycleBuzz {
-    0%,15%   { transform: translateY(0); }
-    20%,35%  { transform: translateY(-1.05em); }
-    40%,55%  { transform: translateY(-2.1em); }
-    60%,75%  { transform: translateY(-3.15em); }
-    80%,95%  { transform: translateY(-4.2em); }
-    100%     { transform: translateY(-5.25em); }
+    0%,8%    { transform: translateY(0); }
+    9%,17%   { transform: translateY(-1.3em); }
+    18%,26%  { transform: translateY(-2.6em); }
+    27%,35%  { transform: translateY(-3.9em); }
+    36%,44%  { transform: translateY(-5.2em); }
+    45%,53%  { transform: translateY(-6.5em); }
+    54%,62%  { transform: translateY(-7.8em); }
+    63%,71%  { transform: translateY(-9.1em); }
+    72%,80%  { transform: translateY(-10.4em); }
+    81%,89%  { transform: translateY(-11.7em); }
+    90%,98%  { transform: translateY(-13em); }
+    99%,100% { transform: translateY(0); }
   }
 
   .hero-subtitle {
@@ -554,12 +561,18 @@
 
   <h1 class="hero-title">
     Edu<span class="word-something"><span class="bracket">[</span><span class="buzzword-wrap"><span class="buzzword-inner">
-      <span>Synergy</span>
-      <span>Disruption</span>
-      <span>Innovation</span>
-      <span>Excellence</span>
-      <span>Impact</span>
-      <span>Synergy</span>
+      <span>synergy</span>
+      <span>ability</span>
+      <span>ruption</span>
+      <span>ification</span>
+      <span>alisation</span>
+      <span>formation</span>
+      <span>gagement</span>
+      <span>futures</span>
+      <span>lutions</span>
+      <span>nnovation</span>
+      <span>something</span>
+      <span>synergy</span>
     </span></span><span class="bracket">]</span></span>
   </h1>
 
