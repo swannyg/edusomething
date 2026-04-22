@@ -239,9 +239,35 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 12px;
+      gap: 8px;
       box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-      width: 36px;
+      width: 44px;
+    }
+    
+    .dial-btn {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      background: rgba(255, 255, 255, 0.05);
+      color: #a5b4fc;
+      font-size: 18px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s ease;
+      font-family: system-ui, sans-serif;
+    }
+    
+    .dial-btn:hover {
+      background: rgba(99, 102, 241, 0.3);
+      border-color: rgba(99, 102, 241, 0.5);
+      transform: scale(1.1);
+    }
+    
+    .dial-btn:active {
+      transform: scale(0.95);
     }
     
     .dial-label {
@@ -262,8 +288,8 @@
     
     .dial-slider {
       width: 150px;
-      height: 4px;
-      border-radius: 2px;
+      height: 6px;
+      border-radius: 3px;
       appearance: none;
       cursor: pointer;
       outline: none;
@@ -272,17 +298,32 @@
     
     .dial-slider::-webkit-slider-thumb {
       appearance: none;
-      width: 20px;
-      height: 20px;
+      width: 22px;
+      height: 22px;
       background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
       border-radius: 50%;
       cursor: pointer;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-      transition: transform 0.2s ease;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
     }
     
     .dial-slider::-webkit-slider-thumb:hover {
-      transform: scale(1.1);
+      transform: scale(1.15);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+    }
+    
+    .dial-slider::-webkit-slider-thumb:active {
+      transform: scale(1.05);
+    }
+    
+    .dial-slider::-moz-range-thumb {
+      width: 22px;
+      height: 22px;
+      background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+      border-radius: 50%;
+      cursor: pointer;
+      border: none;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
     }
     
     .dial-value {
@@ -476,6 +517,7 @@
       
       return `
         <div class="dial-container">
+          <button class="dial-btn" id="dialPlus" title="More annotations">+</button>
           <div class="dial-label">More</div>
           <div class="dial-slider-container">
             <input type="range" class="dial-slider" id="annotationDial" 
@@ -483,6 +525,7 @@
               style="background: ${gradientStyle};">
           </div>
           <div class="dial-label">Less</div>
+          <button class="dial-btn" id="dialMinus" title="Fewer annotations">−</button>
           <div class="dial-value">${state.annotationLevel}</div>
         </div>
       `;
@@ -605,6 +648,23 @@
       if (annotationDial) {
         annotationDial.addEventListener('input', (e) => {
           state.annotationLevel = parseInt(e.target.value);
+          render();
+        });
+      }
+
+      const dialPlus = document.getElementById('dialPlus');
+      const dialMinus = document.getElementById('dialMinus');
+
+      if (dialPlus) {
+        dialPlus.addEventListener('click', () => {
+          state.annotationLevel = Math.min(100, state.annotationLevel + 10);
+          render();
+        });
+      }
+
+      if (dialMinus) {
+        dialMinus.addEventListener('click', () => {
+          state.annotationLevel = Math.max(0, state.annotationLevel - 10);
           render();
         });
       }
