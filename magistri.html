@@ -1,0 +1,2148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A History of Educational Thought</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400;1,600&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0c0a07;
+    --bg2: #141009;
+    --gold: #c9a84c;
+    --gold-light: #e8d5a3;
+    --gold-dim: #7a6530;
+    --text: #f0e6d3;
+    --text-dim: #9a8060;
+    --text-muted: #5a4a30;
+    --line-color: #c9a84c;
+    --card-bg: rgb(18, 14, 6);
+    --card-border: rgba(201, 168, 76, 0.25);
+    --marker-teal: #5bbfad;
+    --marker-purple: #9d7dd8;
+    --node-size: 14px;
+    --ph: #8b7dd8;
+    --co: #5db85d;
+    --be: #d8845d;
+    --cr: #d85d6a;
+    --hu: #5dccd8;
+    --di: #5d8dd8;
+    --cog: #b05dd8;
+    --sl: #d8c05d;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Cormorant Garamond', serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ─── NOISE OVERLAY ─── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 1000;
+    opacity: 0.4;
+  }
+
+  /* ─── HEADER ─── */
+  header {
+    text-align: center;
+    padding: 70px 40px 50px;
+    position: relative;
+    border-bottom: 1px solid var(--card-border);
+    background: linear-gradient(to bottom, rgba(20,16,9,1) 0%, rgba(12,10,7,0) 100%);
+  }
+
+  header::before {
+    content: '✦ MAGISTRI ✦';
+    display: block;
+    font-family: 'Cinzel', serif;
+    font-size: 0.7rem;
+    letter-spacing: 0.5em;
+    color: var(--gold-dim);
+    margin-bottom: 20px;
+  }
+
+  h1 {
+    font-family: 'Cinzel', serif;
+    font-size: clamp(2rem, 5vw, 3.8rem);
+    font-weight: 700;
+    color: var(--gold-light);
+    line-height: 1.1;
+    letter-spacing: 0.05em;
+    text-shadow: 0 0 60px rgba(201,168,76,0.3);
+    margin-bottom: 16px;
+  }
+
+  header p.subtitle {
+    font-family: 'IM Fell English', serif;
+    font-style: italic;
+    font-size: 1.15rem;
+    color: var(--text-dim);
+    max-width: 600px;
+    margin: 0 auto 30px;
+    line-height: 1.6;
+  }
+
+  /* ─── CONTROLS ─── */
+  .controls {
+    position: sticky;
+    top: 0;
+    z-index: 200;
+    background: rgba(12,10,7,0.95);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--card-border);
+    padding: 14px 30px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .controls-label {
+    font-family: 'Cinzel', serif;
+    font-size: 0.65rem;
+    letter-spacing: 0.3em;
+    color: var(--text-muted);
+    margin-right: 6px;
+  }
+
+  .theme-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 14px;
+    border-radius: 20px;
+    font-family: 'Cinzel', serif;
+    font-size: 0.62rem;
+    letter-spacing: 0.12em;
+    cursor: pointer;
+    border: 1px solid;
+    transition: all 0.25s;
+    user-select: none;
+    opacity: 0.7;
+  }
+
+  .theme-pill.active { opacity: 1; }
+  .theme-pill:hover { opacity: 1; transform: translateY(-1px); }
+
+  .theme-pill[data-theme="philosophical"] { border-color: var(--ph); color: var(--ph); }
+  .theme-pill[data-theme="philosophical"].active { background: rgba(139,125,216,0.15); }
+  .theme-pill[data-theme="constructivist"] { border-color: var(--co); color: var(--co); }
+  .theme-pill[data-theme="constructivist"].active { background: rgba(93,184,93,0.15); }
+  .theme-pill[data-theme="behaviourist"] { border-color: var(--be); color: var(--be); }
+  .theme-pill[data-theme="behaviourist"].active { background: rgba(216,132,93,0.15); }
+  .theme-pill[data-theme="critical"] { border-color: var(--cr); color: var(--cr); }
+  .theme-pill[data-theme="critical"].active { background: rgba(216,93,106,0.15); }
+  .theme-pill[data-theme="humanist"] { border-color: var(--hu); color: var(--hu); }
+  .theme-pill[data-theme="humanist"].active { background: rgba(93,204,216,0.15); }
+  .theme-pill[data-theme="direct-instruction"] { border-color: var(--di); color: var(--di); }
+  .theme-pill[data-theme="direct-instruction"].active { background: rgba(93,141,216,0.15); }
+  .theme-pill[data-theme="cognitivist"] { border-color: var(--cog); color: var(--cog); }
+  .theme-pill[data-theme="cognitivist"].active { background: rgba(176,93,216,0.15); }
+  .theme-pill[data-theme="social-learning"] { border-color: var(--sl); color: var(--sl); }
+  .theme-pill[data-theme="social-learning"].active { background: rgba(216,192,93,0.15); }
+
+  .divider-pill {
+    width: 1px;
+    height: 20px;
+    background: var(--card-border);
+    margin: 0 4px;
+  }
+
+  .ctrl-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 14px;
+    border-radius: 20px;
+    font-family: 'Cinzel', serif;
+    font-size: 0.62rem;
+    letter-spacing: 0.12em;
+    cursor: pointer;
+    border: 1px solid var(--gold-dim);
+    color: var(--gold);
+    background: transparent;
+    transition: all 0.25s;
+    opacity: 0.7;
+  }
+  .ctrl-btn:hover, .ctrl-btn.active { opacity: 1; background: rgba(201,168,76,0.1); }
+
+  .conn-legend {
+    display: none;
+    align-items: center;
+    gap: 14px;
+    padding: 5px 14px;
+    border-radius: 20px;
+    border: 1px solid var(--card-border);
+    background: rgba(12,10,7,0.6);
+  }
+  .conn-legend.visible { display: flex; }
+
+  .conn-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'Cinzel', serif;
+    font-size: 0.6rem;
+    letter-spacing: 0.12em;
+    color: var(--text-dim);
+    white-space: nowrap;
+  }
+
+  .conn-swatch {
+    width: 22px;
+    height: 2px;
+    border-radius: 1px;
+    display: inline-block;
+    flex-shrink: 0;
+    position: relative;
+  }
+
+  .conn-swatch::after {
+    content: '';
+    position: absolute;
+    right: -1px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0;
+    height: 0;
+    border-left: 5px solid currentColor;
+    border-top: 3px solid transparent;
+    border-bottom: 3px solid transparent;
+  }
+
+  /* ─── TIMELINE WRAPPER ─── */
+  .timeline-wrap {
+    position: relative;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 60px 20px 120px;
+  }
+
+  /* ─── CENTER LINE ─── */
+  .timeline-line {
+    position: absolute;
+    left: 50%;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    transform: translateX(-50%);
+    z-index: 1;
+    background: linear-gradient(to bottom,
+      transparent 0%,
+      var(--gold-dim) 3%,
+      var(--gold) 15%,
+      var(--gold) 85%,
+      var(--gold-dim) 97%,
+      transparent 100%
+    );
+    box-shadow: 0 0 12px rgba(201,168,76,0.2);
+  }
+
+  /* ─── CONNECTION SVG OVERLAY ─── */
+  #connections-svg {
+    position: absolute;
+    left: 0; top: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 50;
+    opacity: 0;
+    transition: opacity 0.4s;
+    overflow: hidden;
+  }
+  #connections-svg.visible { opacity: 1; }
+
+  /* ─── ERA LABELS ─── */
+  .era-label {
+    position: relative;
+    z-index: 10;
+    text-align: center;
+    padding: 40px 0 20px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    background: var(--bg);
+  }
+
+  .era-label::before, .era-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--gold-dim));
+  }
+  .era-label::after {
+    background: linear-gradient(to left, transparent, var(--gold-dim));
+  }
+
+  .era-label span {
+    font-family: 'Cinzel', serif;
+    font-size: 0.72rem;
+    letter-spacing: 0.35em;
+    color: var(--gold-dim);
+    white-space: nowrap;
+    text-transform: uppercase;
+  }
+
+  /* ─── CONTEXT MARKERS ─── */
+  .ctx-marker {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 18px 0;
+    background: var(--bg);
+  }
+
+  .ctx-inner {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    max-width: 280px;
+    cursor: default;
+    background: var(--bg);
+    padding: 0 16px;
+    z-index: 2;
+  }
+
+  .ctx-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: 2px solid;
+    background: var(--bg);
+    position: relative;
+    z-index: 2;
+    flex-shrink: 0;
+  }
+  .ctx-dot.invention { border-color: var(--gold); box-shadow: 0 0 8px rgba(201,168,76,0.4); }
+  .ctx-dot.institution { border-color: var(--marker-teal); box-shadow: 0 0 8px rgba(91,191,173,0.4); }
+  .ctx-dot.publication { border-color: #d8a05d; box-shadow: 0 0 8px rgba(216,160,93,0.4); }
+  .ctx-dot.period { border-color: var(--marker-purple); box-shadow: 0 0 8px rgba(157,125,216,0.4); }
+  .ctx-dot.digital { border-color: #5d9dd8; box-shadow: 0 0 8px rgba(93,157,216,0.4); }
+
+  .ctx-year {
+    font-family: 'Cinzel', serif;
+    font-size: 0.6rem;
+    letter-spacing: 0.2em;
+    color: var(--text-muted);
+  }
+
+  .ctx-label {
+    font-family: 'IM Fell English', serif;
+    font-style: italic;
+    font-size: 0.88rem;
+    color: var(--text-dim);
+    text-align: center;
+    line-height: 1.3;
+  }
+
+  .ctx-desc {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    text-align: center;
+    line-height: 1.4;
+    max-width: 220px;
+  }
+
+  /* ─── THINKER ENTRY ─── */
+  .thinker-entry {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    align-items: flex-start;
+    transition: opacity 0.35s, padding 0.4s ease;
+    padding: 14px 0;
+    overflow: visible;
+  }
+
+  .thinker-entry.dimmed {
+    opacity: 0;
+    padding: 0;
+    pointer-events: none;
+  }
+  .thinker-entry.highlighted { opacity: 1; }
+  .thinker-entry.card-open { z-index: 300; }
+
+  /* Inner wrapper that collapses height without clipping the detail card */
+  .thinker-shrink {
+    max-height: 300px;
+    overflow: hidden;
+    transition: max-height 0.4s ease;
+    display: flex;
+  }
+  .thinker-entry.dimmed .thinker-shrink {
+    max-height: 0;
+  }
+
+  /* Left: card on left side */
+  .thinker-entry.left {
+    flex-direction: row;
+    justify-content: flex-end;
+    padding-right: calc(50% + 30px);
+  }
+
+  /* Right: card on right side */
+  .thinker-entry.right {
+    flex-direction: row;
+    padding-left: calc(50% + 30px);
+  }
+
+  /* ─── THINKER NODE (the dot on the line) ─── */
+  .thinker-entry::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: var(--node-size);
+    height: var(--node-size);
+    border-radius: 50%;
+    border: 2px solid var(--gold);
+    background: var(--bg);
+    box-shadow: 0 0 10px rgba(201,168,76,0.35);
+    z-index: 3;
+    transition: box-shadow 0.25s;
+  }
+
+  .thinker-entry:hover::before {
+    box-shadow: 0 0 20px rgba(201,168,76,0.7);
+  }
+
+  /* ─── VISIBLE THINKER CARD ─── */
+  .thinker-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    position: relative;
+    background: var(--bg);
+    padding: 8px 12px;
+    border-radius: 4px;
+  }
+
+  .thinker-entry.left .thinker-card { align-items: center; }
+  .thinker-entry.right .thinker-card { align-items: center; }
+
+  .avatar-wrap {
+    position: relative;
+    width: 72px;
+    height: 72px;
+    flex-shrink: 0;
+  }
+
+  .caricature-wrap {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 2px solid var(--card-border);
+    transition: border-color 0.25s, box-shadow 0.25s, transform 0.25s;
+    flex-shrink: 0;
+    position: relative;
+  }
+
+  .flag-badge {
+    position: absolute;
+    bottom: 0;
+    right: -2px;
+    font-size: 0.8rem;
+    line-height: 1;
+    background: var(--bg);
+    border-radius: 50%;
+    width: 22px;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    border: 1px solid var(--card-border);
+    z-index: 2;
+  }
+
+  .thinker-card.active .caricature-wrap,
+  .thinker-card:hover .caricature-wrap {
+    transform: scale(1.05);
+  }
+
+  .caricature-wrap svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  .thinker-name {
+    font-family: 'Cinzel', serif;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--gold-light);
+    text-align: center;
+    letter-spacing: 0.05em;
+    line-height: 1.2;
+  }
+
+  .thinker-dates {
+    font-family: 'IM Fell English', serif;
+    font-style: italic;
+    font-size: 0.74rem;
+    color: var(--text-muted);
+  }
+
+  .thinker-themes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px;
+    justify-content: center;
+  }
+
+  .theme-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .debate-badge {
+    font-size: 0.62rem;
+    color: #e8a040;
+    font-family: 'Cinzel', serif;
+    letter-spacing: 0.05em;
+  }
+
+  /* ─── HOVER DETAIL CARD ─── */
+  .detail-card {
+    position: absolute;
+    top: 0;
+    width: 340px;
+    background: #120e06;
+    border: 1px solid var(--card-border);
+    border-radius: 4px;
+    padding: 22px;
+    z-index: 500;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.28s, transform 0.28s;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.9), 0 0 0 1px #120e06;
+    isolation: isolate;
+  }
+
+  /* Left thinkers: card floats outward to the left, clear of the avatar */
+  .thinker-entry.left .detail-card {
+    right: calc(50% + 160px);
+    left: auto;
+    transform: translateX(8px);
+  }
+
+  /* Right thinkers: card floats outward to the right, clear of the avatar */
+  .thinker-entry.right .detail-card {
+    left: calc(50% + 160px);
+    right: auto;
+    transform: translateX(-8px);
+  }
+
+  .thinker-entry.card-open .detail-card {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  .thinker-entry.card-open .caricature-wrap {
+    border-color: var(--gold);
+    box-shadow: 0 0 20px rgba(201,168,76,0.35);
+  }
+
+  .detail-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(to right, transparent, var(--gold), transparent);
+  }
+
+  .detail-name {
+    font-family: 'Cinzel', serif;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--gold-light);
+    margin-bottom: 2px;
+  }
+
+  .detail-meta {
+    font-family: 'IM Fell English', serif;
+    font-style: italic;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+  }
+
+  .detail-themes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-bottom: 14px;
+  }
+
+  .detail-theme-badge {
+    padding: 2px 9px;
+    border-radius: 10px;
+    font-family: 'Cinzel', serif;
+    font-size: 0.58rem;
+    letter-spacing: 0.08em;
+    border: 1px solid;
+  }
+
+  .detail-section {
+    margin-bottom: 12px;
+  }
+
+  .detail-section-label {
+    font-family: 'Cinzel', serif;
+    font-size: 0.6rem;
+    letter-spacing: 0.25em;
+    color: var(--gold-dim);
+    text-transform: uppercase;
+    margin-bottom: 5px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .detail-section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--card-border);
+  }
+
+  .detail-text {
+    font-size: 0.84rem;
+    line-height: 1.6;
+    color: var(--text);
+    font-weight: 300;
+  }
+
+  .key-terms {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-top: 4px;
+  }
+
+  .key-term {
+    padding: 2px 8px;
+    background: rgba(201,168,76,0.08);
+    border: 1px solid rgba(201,168,76,0.2);
+    border-radius: 3px;
+    font-size: 0.72rem;
+    color: var(--gold);
+    font-style: italic;
+    font-family: 'Cormorant Garamond', serif;
+  }
+
+  .paired-with {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-top: 4px;
+  }
+
+  .paired-chip {
+    padding: 2px 8px;
+    background: rgba(91,191,173,0.08);
+    border: 1px solid rgba(91,191,173,0.25);
+    border-radius: 3px;
+    font-size: 0.72rem;
+    color: var(--marker-teal);
+    font-family: 'Cormorant Garamond', serif;
+  }
+
+  .debate-flag {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 10px;
+    background: rgba(232,160,64,0.1);
+    border: 1px solid rgba(232,160,64,0.3);
+    border-radius: 3px;
+    font-family: 'Cinzel', serif;
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    color: #e8a040;
+    margin-top: 10px;
+  }
+
+  /* ─── FOOTER ─── */
+  footer {
+    text-align: center;
+    padding: 60px 40px;
+    border-top: 1px solid var(--card-border);
+    font-family: 'IM Fell English', serif;
+    font-style: italic;
+    color: var(--text-muted);
+    font-size: 0.88rem;
+    line-height: 1.6;
+  }
+
+  footer .ornament {
+    display: block;
+    font-size: 1.4rem;
+    margin-bottom: 16px;
+    color: var(--gold-dim);
+  }
+
+  /* ─── RESPONSIVE ─── */
+  @media (max-width: 760px) {
+    .thinker-entry.left {
+      flex-direction: row;
+      padding-right: 0;
+      padding-left: calc(50% + 20px);
+    }
+    .thinker-entry.left .detail-card,
+    .thinker-entry.right .detail-card {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) !important;
+      width: 88vw;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+    .thinker-entry.left .thinker-card { align-items: flex-start; }
+  }
+
+  /* ─── SCROLL ANIMATION ─── */
+  .thinker-entry, .ctx-marker, .era-label {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.5s, transform 0.5s, padding 0.4s ease;
+  }
+  .thinker-entry.visible, .ctx-marker.visible, .era-label.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .thinker-entry.dimmed { opacity: 0 !important; padding: 0 !important; pointer-events: none; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>A History of<br>Educational Thought</h1>
+  <p class="subtitle">From the examined life to the learning sciences — two and a half millennia of ideas about how we learn, teach, and come to know.</p>
+</header>
+
+<div class="controls" id="controls">
+  <span class="controls-label">Filter by theme</span>
+  <button class="theme-pill active" data-theme="philosophical">⬡ Philosophical</button>
+  <button class="theme-pill active" data-theme="humanist">⬡ Humanist</button>
+  <button class="theme-pill active" data-theme="constructivist">⬡ Constructivist</button>
+  <button class="theme-pill active" data-theme="behaviourist">⬡ Behaviourist</button>
+  <button class="theme-pill active" data-theme="cognitivist">⬡ Cognitivist</button>
+  <button class="theme-pill active" data-theme="critical">⬡ Critical</button>
+  <button class="theme-pill active" data-theme="direct-instruction">⬡ Direct Instruction</button>
+  <button class="theme-pill active" data-theme="social-learning">⬡ Social Learning</button>
+  <div class="divider-pill"></div>
+  <button class="ctrl-btn" id="toggle-connections">⤡ Show Connections</button>
+  <div class="conn-legend" id="conn-legend">
+    <span class="conn-legend-item"><span class="conn-swatch" style="background:#c9a84c"></span>Taught</span>
+    <span class="conn-legend-item"><span class="conn-swatch" style="background:#5bbfad"></span>Influenced</span>
+    <span class="conn-legend-item"><span class="conn-swatch" style="background:#d85d6a"></span>Critiqued</span>
+  </div>
+  <button class="ctrl-btn" id="reset-filters">↺ Reset</button>
+</div>
+
+<div class="timeline-wrap" id="timeline-wrap">
+  <div class="timeline-line"></div>
+  <svg id="connections-svg"></svg>
+  <div id="timeline-content"></div>
+</div>
+
+<footer>
+  <span class="ornament">❧</span>
+  <em>"Education is not the filling of a pail, but the lighting of a fire."</em><br>
+  <span style="font-size:0.75rem;color:var(--text-muted);margin-top:8px;display:block;">An open educational resource for students of education · Hover to explore · Connections show lines of intellectual influence</span>
+</footer>
+
+<script>
+// ═══════════════════════════════════════════════════════
+// FACE GENERATOR
+// ═══════════════════════════════════════════════════════
+function hex(h, a=0) {
+  const r = Math.max(0, Math.min(255, parseInt(h.slice(1,3),16)+a));
+  const g = Math.max(0, Math.min(255, parseInt(h.slice(3,5),16)+a));
+  const b = Math.max(0, Math.min(255, parseInt(h.slice(5,7),16)+a));
+  return `rgb(${r},${g},${b})`;
+}
+
+function makeFace({bg, skin, hair, hairType='short', beard=null, glasses=false, female=false, extra=''}) {
+  const s = [];
+  const HW = female ? 22 : 24;
+  const shadow = hex(skin, -35);
+  const noseTip = hex(skin, -20);
+
+  // BG circle
+  s.push(`<circle cx="45" cy="45" r="44" fill="${bg}"/>`);
+  s.push(`<circle cx="45" cy="45" r="44" fill="url(#vign_${bg.slice(1)})" opacity="0.4"/>`);
+
+  // Long hair behind head
+  if (['long','wavy','wig'].includes(hairType)) {
+    if (hairType === 'wig') {
+      s.push(`<path d="M${45-HW-6},46 Q${45-HW-4},8 45,6 Q${45+HW+4},8 ${45+HW+6},46 Q${45+HW+8},62 ${45+HW+4},78 Q${45+4},84 ${45-4},84 Q${45-HW-8},82 ${45-HW-4},78 Q${45-HW-8},62 ${45-HW-6},46" fill="${hair}"/>`);
+    } else {
+      s.push(`<path d="M${45-HW},42 Q${45-HW-4},60 ${45-HW-2},78 Q45,86 ${45+HW+2},78 Q${45+HW+4},60 ${45+HW},42" fill="${hair}"/>`);
+    }
+  }
+
+  // Neck
+  s.push(`<rect x="38" y="63" width="14" height="16" rx="5" fill="${skin}"/>`);
+  // Shoulders
+  s.push(`<ellipse cx="45" cy="84" rx="24" ry="10" fill="${hex(skin,-15)}" opacity="0.6"/>`);
+
+  // Head
+  s.push(`<ellipse cx="45" cy="42" rx="${HW}" ry="27" fill="${skin}"/>`);
+  // Ears
+  s.push(`<ellipse cx="${45-HW+1}" cy="42" rx="4" ry="6" fill="${skin}"/>`);
+  s.push(`<ellipse cx="${45+HW-1}" cy="42" rx="4" ry="6" fill="${skin}"/>`);
+
+  // Top hair
+  const topH = hairType === 'bald' ? '' : (() => {
+    switch(hairType) {
+      case 'short': return `<path d="M${45-HW},40 Q${45-HW+1},14 45,12 Q${45+HW-1},14 ${45+HW},40 Q${45+HW-6},22 45,20 Q${45-HW+6},22 ${45-HW},40" fill="${hair}"/>`;
+      case 'long': case 'wavy': return `<path d="M${45-HW},40 Q${45-HW+1},14 45,12 Q${45+HW-1},14 ${45+HW},40 Q${45+HW-6},22 45,20 Q${45-HW+6},22 ${45-HW},40" fill="${hair}"/>`;
+      case 'curly': return `<ellipse cx="45" cy="18" rx="22" ry="12" fill="${hair}"/>` +
+        [0,1,2,3,4].map(i=>`<circle cx="${21+i*9}" cy="${18+Math.sin(i)*4}" r="8" fill="${hair}"/>`).join('');
+      case 'bun': return `<path d="M${45-HW},40 Q${45-HW+1},14 45,12 Q${45+HW-1},14 ${45+HW},40" fill="${hair}"/><circle cx="45" cy="8" r="11" fill="${hair}"/>`;
+      case 'topknot': return `<path d="M${45-HW},40 Q${45-HW+1},14 45,12 Q${45+HW-1},14 ${45+HW},40" fill="${hair}"/><rect x="41" y="0" width="8" height="18" rx="4" fill="${hair}"/><circle cx="45" cy="5" r="7" fill="${hair}"/>`;
+      case 'wig': return `<path d="M${45-HW-4},44 Q${45-HW-2},10 45,7 Q${45+HW+2},10 ${45+HW+4},44 Q${45+HW},20 45,18 Q${45-HW},20 ${45-HW-4},44" fill="${hair}"/>`;
+      default: return '';
+    }
+  })();
+  if (topH) s.push(topH);
+
+  // Bald shine
+  if (hairType === 'bald') s.push(`<ellipse cx="45" cy="22" rx="16" ry="6" fill="white" opacity="0.08"/>`);
+
+  // Eyebrows
+  const brow = hex(hair, -10);
+  s.push(`<path d="M32,35.5 Q37,33 42,35.5" stroke="${brow}" stroke-width="1.8" fill="none" stroke-linecap="round"/>`);
+  s.push(`<path d="M48,35.5 Q53,33 58,35.5" stroke="${brow}" stroke-width="1.8" fill="none" stroke-linecap="round"/>`);
+
+  // Eyes
+  s.push(`<ellipse cx="37" cy="40" rx="4.5" ry="3.8" fill="white"/>`);
+  s.push(`<ellipse cx="53" cy="40" rx="4.5" ry="3.8" fill="white"/>`);
+  s.push(`<circle cx="37.5" cy="40.5" r="2.5" fill="#1a1008"/>`);
+  s.push(`<circle cx="53.5" cy="40.5" r="2.5" fill="#1a1008"/>`);
+  s.push(`<circle cx="38.4" cy="39.5" r="0.9" fill="white" opacity="0.85"/>`);
+  s.push(`<circle cx="54.4" cy="39.5" r="0.9" fill="white" opacity="0.85"/>`);
+
+  // Nose
+  s.push(`<path d="M45,43 L43,50 Q45,53 47,50" stroke="${noseTip}" stroke-width="1.3" fill="none"/>`);
+
+  // Mouth
+  const mouthY = female ? 57 : 58;
+  s.push(`<path d="M38,${mouthY} Q45,${mouthY+4} 52,${mouthY}" stroke="${shadow}" stroke-width="1.6" fill="none" stroke-linecap="round"/>`);
+
+  // Facial hair
+  if (beard === 'full') {
+    s.push(`<path d="M${45-HW+2},54 Q${45-HW+1},70 35,80 Q45,87 55,80 Q${45+HW-1},70 ${45+HW-2},54 Q53,66 45,68 Q37,66 ${45-HW+2},54" fill="${hair}"/>`);
+  } else if (beard === 'long') {
+    s.push(`<path d="M30,57 Q27,74 38,82 Q45,86 52,82 Q63,74 60,57 Q53,68 45,70 Q37,68 30,57" fill="${hair}"/>`);
+  } else if (beard === 'short') {
+    s.push(`<ellipse cx="45" cy="61" rx="15" ry="7" fill="${hair}" opacity="0.85"/>`);
+  } else if (beard === 'goatee') {
+    s.push(`<ellipse cx="45" cy="61" rx="8" ry="5.5" fill="${hair}" opacity="0.85"/>`);
+    s.push(`<path d="M37,60 Q45,70 53,60" fill="${hair}" opacity="0.85"/>`);
+  } else if (beard === 'moustache') {
+    s.push(`<path d="M34,52 Q39,57 45,54.5 Q51,57 56,52 Q51,59.5 45,58.5 Q39,59.5 34,52" fill="${hair}"/>`);
+  } else if (beard === 'trim') {
+    s.push(`<ellipse cx="45" cy="60" rx="12" ry="5" fill="${hair}" opacity="0.7"/>`);
+  }
+
+  // Glasses
+  if (glasses === 'round') {
+    s.push(`<circle cx="37" cy="40" r="7" fill="none" stroke="#2a2018" stroke-width="1.6"/>`);
+    s.push(`<circle cx="53" cy="40" r="7" fill="none" stroke="#2a2018" stroke-width="1.6"/>`);
+    s.push(`<line x1="44" y1="40" x2="46" y2="40" stroke="#2a2018" stroke-width="1.6"/>`);
+    s.push(`<line x1="19" y1="40" x2="30" y2="40" stroke="#2a2018" stroke-width="1.4"/>`);
+    s.push(`<line x1="60" y1="40" x2="71" y2="40" stroke="#2a2018" stroke-width="1.4"/>`);
+  } else if (glasses === 'rect') {
+    s.push(`<rect x="28" y="35" width="17" height="11" rx="2" fill="none" stroke="#2a2018" stroke-width="1.6"/>`);
+    s.push(`<rect x="45" y="35" width="17" height="11" rx="2" fill="none" stroke="#2a2018" stroke-width="1.6"/>`);
+    s.push(`<line x1="19" y1="40.5" x2="28" y2="40.5" stroke="#2a2018" stroke-width="1.4"/>`);
+    s.push(`<line x1="62" y1="40.5" x2="71" y2="40.5" stroke="#2a2018" stroke-width="1.4"/>`);
+  } else if (glasses === 'small') {
+    s.push(`<circle cx="37" cy="40" r="5.5" fill="none" stroke="#2a2018" stroke-width="1.3"/>`);
+    s.push(`<circle cx="53" cy="40" r="5.5" fill="none" stroke="#2a2018" stroke-width="1.3"/>`);
+    s.push(`<line x1="42.5" y1="40" x2="47.5" y2="40" stroke="#2a2018" stroke-width="1.3"/>`);
+    s.push(`<line x1="21" y1="39" x2="31.5" y2="40" stroke="#2a2018" stroke-width="1.2"/>`);
+    s.push(`<line x1="58.5" y1="40" x2="69" y2="39" stroke="#2a2018" stroke-width="1.2"/>`);
+  }
+
+  if (extra) s.push(extra);
+
+  // Vignette gradient def (unique per bg)
+  const vid = `vign_${bg.slice(1)}`;
+  const defs = `<defs><radialGradient id="${vid}" cx="50%" cy="50%" r="50%"><stop offset="60%" stop-color="transparent"/><stop offset="100%" stop-color="rgba(0,0,0,0.4)"/></radialGradient></defs>`;
+
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 90 90">${defs}${s.join('')}</svg>`;
+}
+
+// ═══════════════════════════════════════════════════════
+// FLAG LOOKUP
+// ═══════════════════════════════════════════════════════
+const FLAGS = {
+  'confucius':      '🇨🇳',
+  'socrates':       '🇬🇷',
+  'plato':          '🇬🇷',
+  'aristotle':      '🇬🇷',
+  'quintilian':     '🇪🇸',
+  'ibn-sina':       '🇮🇷',
+  'ibn-rushd':      '🇪🇸',
+  'aquinas':        '🇮🇹',
+  'ibn-khaldun':    '🇹🇳',
+  'montaigne':      '🇫🇷',
+  'erasmus':        '🇳🇱',
+  'comenius':       '🇨🇿',
+  'locke':          '🇬🇧',
+  'rousseau':       '🇨🇭',
+  'wollstonecraft': '🇬🇧',
+  'owen':           '🇬🇧',
+  'herbart':        '🇩🇪',
+  'pestalozzi':     '🇨🇭',
+  'froebel':        '🇩🇪',
+  'mann':           '🇺🇸',
+  'arnold':         '🇬🇧',
+  'spencer':        '🇬🇧',
+  'mason':          '🇬🇧',
+  'cooper':         '🇺🇸',
+  'steiner':        '🇦🇹',
+  'tagore':         '🇮🇳',
+  'james':          '🇺🇸',
+  'isaacs':         '🇬🇧',
+  'dewey':          '🇺🇸',
+  'montessori':     '🇮🇹',
+  'gramsci':        '🇮🇹',
+  'binet':          '🇫🇷',
+  'ambedkar':       '🇮🇳',
+  'vygotsky':       '🇷🇺',
+  'piaget':         '🇨🇭',
+  'rogers':         '🇺🇸',
+  'skinner':        '🇺🇸',
+  'ausubel':        '🇺🇸',
+  'bloom':          '🇺🇸',
+  'nyerere':        '🇹🇿',
+  'bruner':         '🇺🇸',
+  'bandura':        '🇨🇦',
+  'freire':         '🇧🇷',
+  'illich':         '🇦🇹',
+  'bjork':          '🇺🇸',
+  'hirsch':         '🇺🇸',
+  'noddings':       '🇺🇸',
+  'sweller':        '🇦🇺',
+  'gardner':        '🇺🇸',
+  'dweck':          '🇺🇸',
+  'hooks':          '🇺🇸',
+  'wiliam':         '🇬🇧',
+  'hattie':         '🇳🇿',
+  'willingham':     '🇺🇸',
+  'kirschner':      '🇳🇱',
+  'christodoulou':  '🇬🇧',
+  'humboldt':       '🇩🇪',
+};
+
+// ═══════════════════════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════════════════════
+const THEME_COLORS = {
+  'philosophical': '#8b7dd8',
+  'constructivist': '#5db85d',
+  'behaviourist': '#d8845d',
+  'critical': '#d85d6a',
+  'humanist': '#5dccd8',
+  'direct-instruction': '#5d8dd8',
+  'cognitivist': '#b05dd8',
+  'social-learning': '#d8c05d'
+};
+
+const THINKERS = [
+  {
+    id:'confucius', name:'Confucius', dates:'551–479 BCE', year:-551, side:'left',
+    origin:'Ancient China',
+    themes:['philosophical','humanist'],
+    summary:'Confucius believed education was the great equaliser — that virtue and knowledge could be cultivated in any person regardless of birth. His model of the teacher as moral exemplar shaped Chinese and East Asian education for over two millennia.',
+    impact:'The Confucian examination system (Keju) became the world\'s first standardised meritocratic assessment system, influencing Chinese society for 1,300 years. His dialogues collected in the Analects remain among the most read educational texts in history.',
+    implications:'Emphasis on moral character development alongside academic knowledge; respect for the teacher-student relationship; education as civic and ethical duty; the value of continuous self-cultivation.',
+    keyTerms:['Ren (benevolence)','Li (ritual propriety)','Junzi (exemplary person)','Keju (imperial examinations)','The Analects','Self-cultivation'],
+    pairedWith:['Plato','Aristotle','Dewey'],
+    influenced:['chinese-education'],
+    stillDebated:false,
+    face:{bg:'#5C3A10', skin:'#C89060', hair:'#1a1010', hairType:'topknot', beard:'long'}
+  },
+  {
+    id:'socrates', name:'Socrates', dates:'470–399 BCE', year:-470, side:'right',
+    origin:'Ancient Greece',
+    themes:['philosophical','humanist'],
+    summary:'Socrates never wrote anything down, yet his method of relentless questioning — exposing assumptions and leading interlocutors toward knowledge they already possessed — remains education\'s most enduring technique. He was put to death for it.',
+    impact:'The Socratic method is the foundation of critical thinking pedagogy worldwide. It is central to legal, medical, and philosophical education, and underpins every tradition that places dialogue at the heart of learning.',
+    implications:'Learning occurs through productive dialogue, not passive reception. The teacher\'s role is to question, not lecture. Knowledge is something discovered, not deposited. Cognitive discomfort (aporia) is a precondition for genuine learning.',
+    keyTerms:['Socratic Method','Maieutics (midwifery of ideas)','Elenchus (cross-examination)','Aporia (productive puzzlement)','Examined life'],
+    pairedWith:['Plato','Freire','Dewey'],
+    influenced:['plato'],
+    stillDebated:false,
+    face:{bg:'#7A4A20', skin:'#D4A070', hair:'#888888', hairType:'bald', beard:'full'}
+  },
+  {
+    id:'plato', name:'Plato', dates:'428–348 BCE', year:-428, side:'left',
+    origin:'Ancient Greece',
+    themes:['philosophical'],
+    summary:'Plato\'s Republic presents the most ambitious educational vision in Western philosophy — a system designed to produce philosopher-kings. He believed education should train the soul to perceive eternal truths beyond the illusions of the senses.',
+    impact:'Founded the Academy (387 BCE), the first institution of higher learning in the Western world. His Allegory of the Cave remains the most powerful metaphor for the journey from ignorance to knowledge. His influence on curriculum and the liberal arts is incalculable.',
+    implications:'Education is formation of character, not merely transmission of information. Most people mistake appearance for reality — education should free us from this. The curriculum should lead upward from sensation to reason to knowledge of the Good.',
+    keyTerms:['Allegory of the Cave','Theory of Forms','The Republic','The Academy','Liberal education','Philosophical education'],
+    pairedWith:['Socrates','Aristotle','Wollstonecraft'],
+    influenced:['aristotle'],
+    stillDebated:false,
+    face:{bg:'#5A3A7A', skin:'#D4A070', hair:'#6a6060', hairType:'short', beard:'short'}
+  },
+  {
+    id:'aristotle', name:'Aristotle', dates:'384–322 BCE', year:-384, side:'right',
+    origin:'Ancient Greece',
+    themes:['philosophical','humanist'],
+    summary:'Aristotle broke decisively from Plato by insisting all knowledge begins in sensory experience. His educational vision centred on developing practical wisdom (phronesis) and the habits of character required for a flourishing life (eudaimonia).',
+    impact:'His concept of the liberal arts shaped medieval university curricula for centuries. His empirical approach laid foundations for scientific education. His ethics of character and habit are experiencing a significant revival in contemporary character education movements.',
+    implications:'Education develops the whole person; habit and practice are central to virtue; different subjects serve different educational purposes; the goal of education is human flourishing, not mere knowledge acquisition.',
+    keyTerms:['Phronesis (practical wisdom)','Eudaimonia (flourishing)','Habituation','Liberal arts','The Lyceum','Character education'],
+    pairedWith:['Plato','Aquinas','Dewey'],
+    influenced:['quintilian','ibn-rushd','aquinas'],
+    stillDebated:false,
+    face:{bg:'#3A5A30', skin:'#D4A070', hair:'#4a3020', hairType:'short', beard:'short'}
+  },
+  {
+    id:'quintilian', name:'Quintilian', dates:'c.35–100 CE', year:35, side:'left',
+    origin:'Roman Empire',
+    themes:['humanist','direct-instruction'],
+    summary:'Quintilian\'s Institutio Oratoria is history\'s first systematic treatise on education. He argued all children are capable of learning, that teachers must motivate rather than punish, and that education should be carefully matched to each child\'s individual capacities.',
+    impact:'Rediscovered during the Renaissance, Quintilian profoundly influenced humanist educators. His insistence on teacher quality, positive motivation, and individual differences reads as remarkably modern — anticipating much of what educational psychology would later confirm.',
+    implications:'Individual differences must be recognised and accommodated; praise is more effective than punishment; teacher quality is paramount; education should develop the whole person; learning should be made enjoyable.',
+    keyTerms:['Institutio Oratoria','Rhetoric','Individual differences','Motivation in learning','Educator\'s responsibility'],
+    pairedWith:['Erasmus','Pestalozzi','Hattie'],
+    influenced:['erasmus'],
+    stillDebated:false,
+    face:{bg:'#6A2A2A', skin:'#D4A070', hair:'#3a2820', hairType:'short', beard:null}
+  },
+  {
+    id:'ibn-rushd', name:'Ibn Rushd', dates:'1126–1198', year:1126, side:'right',
+    origin:'Islamic Spain (Al-Andalus)',
+    themes:['philosophical'],
+    summary:'Known in Europe as Averroes, Ibn Rushd wrote meticulous commentaries on Aristotle that reintroduced Greek philosophy to medieval Europe. He argued powerfully for the compatibility of reason and faith, and that philosophy had an independent role in the pursuit of truth.',
+    impact:'Without Averroes, the European Renaissance might not have occurred as it did. His transmission of Aristotle catalysed the intellectual revolution of Scholasticism. He represents the critical role of Islamic scholarship in preserving and extending the classical tradition.',
+    implications:'Reason and systematic inquiry deserve a place alongside faith in education; cross-cultural transmission of knowledge is a civilisational good; commentary and synthesis are legitimate scholarly contributions.',
+    keyTerms:['Averroism','Aristotelian commentaries','Reason and faith','Islamic Golden Age','Intellect theory'],
+    pairedWith:['Aristotle','Aquinas','Ibn Khaldun'],
+    influenced:['aquinas'],
+    stillDebated:false,
+    face:{bg:'#2A4A3A', skin:'#A87040', hair:'#1a1010', hairType:'short', beard:'short'}
+  },
+  {
+    id:'aquinas', name:'Thomas Aquinas', dates:'1225–1274', year:1225, side:'left',
+    origin:'Medieval Europe',
+    themes:['philosophical','direct-instruction'],
+    summary:'Aquinas synthesised Christian theology with Aristotelian philosophy, arguing that reason and faith were complementary paths to truth. His method — the disputation — structured inquiry around thesis, objection, and reasoned response, providing a rigorous pedagogical framework.',
+    impact:'Shaped the entire curriculum of medieval universities. The scholastic method he developed influenced university pedagogy for centuries. He established that intellectual inquiry was not only compatible with religious faith but was a form of worship.',
+    implications:'Systematic questioning is a powerful pedagogical tool; structured argument — presenting objections before answering them — builds deeper understanding; integration of different knowledge domains enriches learning.',
+    keyTerms:['Scholasticism','Disputatio (structured debate)','Summa Theologica','Faith and Reason','Natural law','Intellectual virtue'],
+    pairedWith:['Aristotle','Ibn Rushd','Erasmus'],
+    influenced:[],
+    stillDebated:false,
+    face:{bg:'#3A2A5A', skin:'#E0B880', hair:'#2a2018', hairType:'short', beard:null,
+      extra:`<rect x="30" y="72" width="30" height="18" rx="2" fill="#1a1a3a" opacity="0.7"/>`}
+  },
+  {
+    id:'ibn-khaldun', name:'Ibn Khaldun', dates:'1332–1406', year:1332, side:'right',
+    origin:'North Africa',
+    themes:['philosophical','social-learning'],
+    summary:'Ibn Khaldun\'s Muqaddimah contains a remarkable proto-sociology of education. He argued that rote memorisation without understanding damages the intellect, that students learn better in positive environments, and that teaching methods affect outcomes independently of content.',
+    impact:'He anticipates by centuries many central findings of educational psychology: the importance of understanding over memorisation, the role of motivation, the social dimensions of learning. His insights connect directly to Vygotsky, Dewey, and modern cognitive science.',
+    implications:'Context and social environment shape learning profoundly; understanding must precede memorisation; harsh teaching methods damage the intellect and spirit; education is a social phenomenon, not merely an individual one.',
+    keyTerms:['Muqaddimah','Asabiyyah (social cohesion)','Understanding vs. memorisation','Social foundations of learning','Cyclical history'],
+    pairedWith:['Dewey','Vygotsky','Freire'],
+    influenced:[],
+    stillDebated:false,
+    face:{bg:'#3A2A1A', skin:'#A87040', hair:'#1a1010', hairType:'short', beard:'short'}
+  },
+  {
+    id:'erasmus', name:'Erasmus', dates:'1466–1536', year:1466, side:'left',
+    origin:'Northern Renaissance Europe',
+    themes:['humanist'],
+    summary:'Erasmus was the supreme humanist educator of the Northern Renaissance, championing learning as liberation from ignorance and superstition. He believed education should cultivate virtue, eloquence, and piety — and crucially, that it should be joyful rather than fearful.',
+    impact:'His educational writings shaped humanist education across Europe. His championing of Quintilian helped recover ancient educational wisdom. He argued for accessible, engaging, dialogic teaching as an alternative to the brutality of medieval schooling.',
+    implications:'Education should be pleasant and motivating, never terrorising; classical learning forms the basis of moral development; the teacher\'s character and humanity are central to good education; learning and laughter are compatible.',
+    keyTerms:['Christian Humanism','De Pueris (On the Education of Children)','Liberal arts','Colloquies','Praise of Folly'],
+    pairedWith:['Quintilian','Comenius','Wollstonecraft'],
+    influenced:['comenius'],
+    stillDebated:false,
+    face:{bg:'#4A2A3A', skin:'#E0C090', hair:'#2a2018', hairType:'short', beard:null}
+  },
+  {
+    id:'comenius', name:'John Comenius', dates:'1592–1670', year:1592, side:'right',
+    origin:'Moravia (Czech Republic)',
+    themes:['humanist','direct-instruction'],
+    summary:'Often called the father of modern education, Comenius believed all people of all classes — including women — should be educated. He invented the illustrated textbook, argued for teaching in the vernacular, and developed sequential curricula from simple to complex.',
+    impact:'His Didactica Magna and Orbis Sensualium Pictus (world\'s first illustrated children\'s textbook) transformed how education was conceived. His vision of universal education laid groundwork for compulsory public schooling centuries later.',
+    implications:'Education is a universal right; visual learning is powerful; curriculum should sequence from simple to complex, matching the natural order of development; teach things, not just words.',
+    keyTerms:['Didactica Magna','Orbis Sensualium Pictus','Pansophism (universal knowledge)','Universal education','Vernacular teaching'],
+    pairedWith:['Erasmus','Locke','Pestalozzi'],
+    influenced:['locke'],
+    stillDebated:false,
+    face:{bg:'#2A3A5A', skin:'#E0C090', hair:'#2a2018', hairType:'short', beard:null}
+  },
+  {
+    id:'locke', name:'John Locke', dates:'1632–1704', year:1632, side:'left',
+    origin:'England',
+    themes:['philosophical','humanist'],
+    summary:'Locke\'s tabula rasa (blank slate) theory was revolutionary: the mind at birth contains no innate ideas, and all knowledge comes from experience. This placed education at the very centre of human development and made it a fundamentally moral and political project.',
+    impact:'Influenced Rousseau, Jefferson, and the entire liberal tradition of education. His ideas underpin both progressive and traditionalist approaches to curriculum. His empiricism continues to shape educational theory and cognitive science.',
+    implications:'Environment and experience shape the person; education is the primary vehicle of social progress; reason should be cultivated through experience, not suppressed; the early years are formative; habit formation is crucial.',
+    keyTerms:['Tabula rasa','Some Thoughts Concerning Education','Empiricism','Sensory experience','Liberal education','Virtue and reason'],
+    pairedWith:['Rousseau','Comenius','James'],
+    influenced:['rousseau'],
+    stillDebated:false,
+    face:{bg:'#1A3A4A', skin:'#E0C090', hair:'#c8b890', hairType:'wig', beard:null}
+  },
+  {
+    id:'rousseau', name:'Jean-Jacques Rousseau', dates:'1712–1778', year:1712, side:'right',
+    origin:'Geneva / France',
+    themes:['humanist','constructivist'],
+    summary:'In Emile (1762), Rousseau argued that children are born naturally good and that society corrupts them. Education should follow the child\'s natural development, protecting the child from premature socialisation and allowing genuine learning to emerge through experience and play.',
+    impact:'Triggered the child-centred movement in education. His ideas flow directly through Pestalozzi and Froebel to Montessori, Dewey, and the entire progressive tradition. Emile is arguably the most influential educational text of the modern era.',
+    implications:'Education must follow the child\'s natural developmental stage; experience over instruction; protect children from harmful influences until they can reason; play is the child\'s work; the teacher should follow, not lead.',
+    keyTerms:['Emile','Natural education','Child-centred learning','Negative education','Amour de soi','The Social Contract'],
+    pairedWith:['Locke','Pestalozzi','Dewey','Montessori'],
+    influenced:['pestalozzi','wollstonecraft','froebel'],
+    stillDebated:true,
+    face:{bg:'#4A3A1A', skin:'#E0C090', hair:'#d8d0b0', hairType:'wig', beard:null}
+  },
+  {
+    id:'wollstonecraft', name:'Mary Wollstonecraft', dates:'1759–1797', year:1759, side:'left',
+    origin:'England',
+    themes:['critical','humanist','philosophical'],
+    summary:'Wollstonecraft argued in A Vindication of the Rights of Woman (1792) that women\'s apparent intellectual inferiority was entirely the product of inadequate education, not nature. Full rationality, she insisted, could be developed in women given access to proper education.',
+    impact:'A foundational text in the education of women and girls. Her arguments influenced the suffragette movement and all subsequent debates about gender and education. She established that curriculum and pedagogy reflect and reproduce social power relations.',
+    implications:'Education must be equal regardless of gender; what counts as intelligence and capability is shaped by social norms, not nature; the curriculum reflects and reproduces power; educating women educates the whole of society.',
+    keyTerms:['A Vindication of the Rights of Woman','Rational education','Gender equality','Social formation','Civic education for women'],
+    pairedWith:['Rousseau','Plato','hooks','Noddings'],
+    influenced:[],
+    stillDebated:false,
+    face:{bg:'#4A1A3A', skin:'#E8C8A0', hair:'#8a6040', hairType:'bun', beard:null, female:true}
+  },
+  {
+    id:'pestalozzi', name:'Johann Pestalozzi', dates:'1746–1827', year:1746, side:'right',
+    origin:'Switzerland',
+    themes:['humanist','constructivist'],
+    summary:'Pestalozzi took Rousseau\'s ideas into practice, establishing schools for poor and orphaned children based on hands-on learning, emotional security, and developing the head, heart, and hands together. He insisted love, not authority, should be the governing spirit of education.',
+    impact:'The most influential educator of the early 19th century. Influenced Froebel, Herbart, Robert Owen, and spread the ideal of universal public education. Dewey explicitly cited him as a forefather. His schools attracted visitors from across Europe.',
+    implications:'Concrete experience must precede abstract understanding; emotional security is a prerequisite for effective learning; the whole child matters — intellectual, moral, and physical development are inseparable; education as social reform.',
+    keyTerms:['Anschauung (intuitive learning)','Head-Heart-Hands','Object lessons','Leonard and Gertrude','Education of the poor'],
+    pairedWith:['Rousseau','Froebel','Dewey','Montessori'],
+    influenced:['froebel','dewey'],
+    stillDebated:false,
+    face:{bg:'#2A3A2A', skin:'#E0B880', hair:'#8a8070', hairType:'short', beard:null}
+  },
+  {
+    id:'froebel', name:'Friedrich Froebel', dates:'1782–1852', year:1782, side:'left',
+    origin:'Germany',
+    themes:['humanist','constructivist'],
+    summary:'Froebel invented the kindergarten, believing early childhood was a critical developmental period. Play was not a distraction from learning but its primary vehicle. He designed "gifts" — beautifully crafted materials for children to explore concepts through structured play.',
+    impact:'Created the kindergarten movement that spread across the world. His ideas about play-based learning and the critical importance of early childhood remain central to early years education globally. He is the direct ancestor of every playgroup and nursery.',
+    implications:'Play is the highest form of children\'s learning; early childhood is a critical and irreplaceable developmental period; structured materials can guide discovery; the teacher as careful observer and facilitator.',
+    keyTerms:['Kindergarten (children\'s garden)','Gifts (learning materials)','Play-based learning','Symbolic play','The Education of Man','Crystalline forms'],
+    pairedWith:['Pestalozzi','Montessori','Piaget'],
+    influenced:['montessori'],
+    stillDebated:false,
+    face:{bg:'#1A2A3A', skin:'#E0B880', hair:'#6a5040', hairType:'short', beard:'trim'}
+  },
+  {
+    id:'spencer', name:'Herbert Spencer', dates:'1820–1903', year:1820, side:'right',
+    origin:'England',
+    themes:['direct-instruction','philosophical'],
+    summary:'Spencer posed the question that still drives curriculum debate: "What knowledge is of most worth?" He argued science should replace classics at the core of education, and that schooling should prepare people for the practical demands of life, not merely the cultural tastes of the elite.',
+    impact:'His question became the defining question of curriculum theory. His advocacy for science education helped shift the curriculum away from classical subjects. His social Darwinism is now discredited, but his curriculum question endures.',
+    implications:'Curriculum choices are always value-laden and must be justified; the purpose of education determines its content; science literacy is non-negotiable for modern citizens; whose interests does the curriculum serve?',
+    keyTerms:['"What knowledge is of most worth?"','Curriculum theory','Science education','Social Darwinism','Education essays'],
+    pairedWith:['Hirsch','Dewey','Aristotle'],
+    influenced:[],
+    stillDebated:true,
+    face:{bg:'#2A2A3A', skin:'#E0B880', hair:'#6a5040', hairType:'short', beard:'short'}
+  },
+  {
+    id:'mason', name:'Charlotte Mason', dates:'1842–1923', year:1842, side:'left',
+    origin:'England',
+    themes:['humanist','constructivist'],
+    summary:'Mason developed a comprehensive educational philosophy centred on "living books" (rich narrative texts rather than dry textbooks), nature study, narration (children retelling what they\'ve learned), and short focused lessons. She insisted children deserved intellectual respect as full persons.',
+    impact:'The Charlotte Mason method remains widely practised, especially in home education. Her ideas about rich literature and direct nature study anticipate later theories of knowledge-rich curricula and have seen a significant revival in the 21st century.',
+    implications:'Children are full intellectual persons and deserve accordingly rich educational materials; narration (retelling) is a powerful form of active recall; short lessons maintain attention; learning should be a feast, not a forced feeding.',
+    keyTerms:['Living books','Narration','Atmosphere-Discipline-Life','Short lessons','Nature study','The liberal education'],
+    pairedWith:['Froebel','Hirsch','Dewey'],
+    influenced:[],
+    stillDebated:false,
+    face:{bg:'#3A1A2A', skin:'#E8C8A0', hair:'#5a4030', hairType:'bun', beard:null, female:true}
+  },
+  {
+    id:'james', name:'William James', dates:'1842–1910', year:1843, side:'right',
+    origin:'USA',
+    themes:['philosophical','cognitivist'],
+    summary:'James was the founder of American psychology and, through his Talks to Teachers, connected psychological principles to classroom practice. He emphasised attention, habit formation, and the role of emotion in learning — ideas that neuroscience would confirm a century later.',
+    impact:'Bridged philosophy and the new science of psychology. His direct influence on Dewey was immense. He established that empirical psychology could and should inform educational practice — founding the tradition of evidence-informed teaching.',
+    implications:'Habit formation is central to education and character; attention is limited and must be actively cultivated; emotion and interest are not obstacles to learning but its fuel; students learn best by doing.',
+    keyTerms:['Pragmatism','Habit formation','Stream of consciousness','Talks to Teachers','Radical empiricism','Attention'],
+    pairedWith:['Dewey','Locke','Piaget'],
+    influenced:['dewey'],
+    stillDebated:false,
+    face:{bg:'#1A3A2A', skin:'#E0B880', hair:'#4a3020', hairType:'short', beard:'short'}
+  },
+  {
+    id:'dewey', name:'John Dewey', dates:'1859–1952', year:1859, side:'left',
+    origin:'USA',
+    themes:['constructivist','humanist','social-learning'],
+    summary:'Dewey is the most influential educational thinker of the modern era. Education, for Dewey, was not preparation for life — it was life itself. Learning must be grounded in genuine experience, connected to real problems, inherently social, and in service of democracy.',
+    impact:'His Laboratory School in Chicago was the template for progressive education worldwide. Democracy and Education (1916) is the most comprehensive philosophy of education in the English language. His ideas shaped 20th century schooling globally.',
+    implications:'Learn by doing; connect school to authentic life outside it; democracy requires thoughtful educated citizens; problem-solving and inquiry are more valuable than rote recall; the curriculum should connect to children\'s lived experience.',
+    keyTerms:['Experiential learning','Democracy and Education','Learning by doing','Progressive education','Inquiry-based learning','The Laboratory School','Reflective thought'],
+    pairedWith:['Rousseau','James','Freire','Bruner'],
+    influenced:['bruner'],
+    stillDebated:true,
+    face:{bg:'#1A1A3A', skin:'#E0B880', hair:'#8a7a6a', hairType:'short', beard:null}
+  },
+  {
+    id:'montessori', name:'Maria Montessori', dates:'1870–1952', year:1870, side:'right',
+    origin:'Italy',
+    themes:['humanist','constructivist'],
+    summary:'Montessori developed her method working with children dismissed as ineducable. She designed meticulous materials and prepared environments in which children could direct their own learning at their own pace — demonstrating that the children society had written off could exceed all expectations.',
+    impact:'The Montessori method operates in thousands of schools worldwide. Research consistently shows strong benefits for self-regulation, executive function, and intrinsic motivation. She was also the first woman to receive a medical degree in Italy.',
+    implications:'Children are natural learners when environments are appropriately prepared; sensitive developmental periods must be respected; mixed-age learning is natural and beneficial; intrinsic motivation outperforms extrinsic rewards; the teacher as scientist-observer.',
+    keyTerms:['Prepared environment','Sensitive periods','Montessori materials','Normalisation','The Absorbent Mind','Casa dei Bambini'],
+    pairedWith:['Froebel','Rousseau','Piaget','Vygotsky'],
+    influenced:[],
+    stillDebated:true,
+    face:{bg:'#3A1A1A', skin:'#C87850', hair:'#2a1810', hairType:'bun', beard:null, female:true}
+  },
+  {
+    id:'binet', name:'Alfred Binet', dates:'1857–1911', year:1857, side:'left',
+    origin:'France',
+    themes:['cognitivist'],
+    summary:'Binet developed the first intelligence test to identify children in Paris schools who needed additional educational support — explicitly not, as he insisted, to rank or sort children permanently. He believed intelligence was modifiable and that testing should serve intervention, not labelling.',
+    impact:'His test was transformed, largely against his explicit intentions, into the IQ test and the framework of fixed, rankable intelligence. This misapplication had enormous consequences for education systems — streaming, labelling, and limiting children based on test scores.',
+    implications:'Assessment should serve learning, not label children; intelligence is not a fixed, singular quantity; the purpose and interpretation of tests matters enormously; educational psychology carries significant ethical responsibilities.',
+    keyTerms:['Binet-Simon scale','Mental age','IQ (misapplication of his work)','Orthopedagogy','Mental orthopedics','Dynamic assessment'],
+    pairedWith:['Piaget','Gardner','Vygotsky'],
+    influenced:['piaget'],
+    stillDebated:true,
+    face:{bg:'#2A1A3A', skin:'#E0B880', hair:'#3a2820', hairType:'short', beard:'moustache'}
+  },
+  {
+    id:'vygotsky', name:'Lev Vygotsky', dates:'1896–1934', year:1896, side:'right',
+    origin:'Soviet Russia / Belarus',
+    themes:['constructivist','social-learning'],
+    summary:'Vygotsky died at 37 yet produced ideas that transformed educational psychology. Learning is fundamentally social — we think with and through others before we can think alone. The teacher, peer, and culture are essential in bringing learners into what they cannot yet do independently.',
+    impact:'The Zone of Proximal Development is one of the most cited concepts in all of education. His social constructivism underpins cooperative learning, scaffolding, and the idea that teaching should target the leading edge of development.',
+    implications:'Social interaction drives cognitive development; teach to the edge of what students can do with support; language is the primary tool of thought; culture and history shape the mind; collaborative learning is not merely a teaching strategy but a fundamental feature of how minds develop.',
+    keyTerms:['Zone of Proximal Development (ZPD)','Scaffolding (coined later by Bruner)','More Knowledgeable Other','Inner speech','Social constructivism','Cultural-historical theory'],
+    pairedWith:['Piaget','Bruner','Dewey','Freire'],
+    influenced:['bruner'],
+    stillDebated:false,
+    face:{bg:'#1A3A1A', skin:'#E0C090', hair:'#2a2018', hairType:'short', beard:null}
+  },
+  {
+    id:'piaget', name:'Jean Piaget', dates:'1896–1980', year:1897, side:'left',
+    origin:'Switzerland',
+    themes:['constructivist','cognitivist'],
+    summary:'Piaget spent decades observing how children think, concluding they are not miniature adults but pass through qualitatively different stages of cognitive development. Children actively construct their understanding through physical and intellectual interaction with the world.',
+    impact:'Perhaps the most cited figure in educational psychology. His stage theory shaped curriculum design (especially primary education), assessment frameworks, and the entire constructivist tradition. His insistence that children think differently from adults was revolutionary.',
+    implications:'Teaching must match the learner\'s developmental stage; children construct rather than receive knowledge; hands-on exploration is developmentally essential; readiness is real; assessing understanding matters more than testing recall.',
+    keyTerms:['Schemas','Assimilation and accommodation','Sensorimotor stage','Concrete operational stage','Formal operational stage','Constructivism','Equilibration'],
+    pairedWith:['Vygotsky','Bruner','Montessori','Binet'],
+    influenced:['bruner'],
+    stillDebated:true,
+    face:{bg:'#2A1A3A', skin:'#E0C090', hair:'#5a4030', hairType:'short', beard:'moustache'}
+  },
+  {
+    id:'skinner', name:'B.F. Skinner', dates:'1904–1990', year:1904, side:'right',
+    origin:'USA',
+    themes:['behaviourist'],
+    summary:'Skinner argued all learning is a matter of reinforcement: behaviour followed by positive consequences is strengthened; behaviour followed by negative consequences is weakened. He applied operant conditioning directly to education through programmed instruction and teaching machines.',
+    impact:'Behaviourism dominated educational psychology from the 1930s to 1960s. Token economies, behaviour management systems, programmed learning, and direct instruction methods all trace to Skinnerian principles. His legacy remains contested but functionally persistent in classrooms.',
+    implications:'Immediate feedback powerfully shapes behaviour; break tasks into small, achievable steps; reward learning behaviour; sequence tasks carefully from simple to complex. But beware: over-reliance on external rewards can undermine intrinsic motivation.',
+    keyTerms:['Operant conditioning','Reinforcement','Programmed instruction','Teaching machines','Token economy','Behaviour modification','Verbal Behavior'],
+    pairedWith:['Bloom','Bandura','Kirschner'],
+    influenced:['bloom'],
+    stillDebated:true,
+    face:{bg:'#3A1A1A', skin:'#E0B880', hair:'#4a3020', hairType:'short', beard:null}
+  },
+  {
+    id:'bloom', name:'Benjamin Bloom', dates:'1913–1999', year:1913, side:'left',
+    origin:'USA',
+    themes:['cognitivist','direct-instruction'],
+    summary:'Bloom\'s two great contributions were his Taxonomy of Educational Objectives — a hierarchy of cognitive skills from simple recall to complex creation — and mastery learning: the finding that virtually all students can achieve at high levels given sufficient time, good instruction, and formative feedback.',
+    impact:'Bloom\'s Taxonomy is used in virtually every teacher training programme in the world. Mastery learning has strong research support and influenced approaches from the Keller Plan to Khan Academy. His "2-sigma problem" — that tutoring produces effects of two standard deviations — has driven research for decades.',
+    implications:'Design learning experiences targeting higher-order thinking, not just recall; virtually all students can achieve mastery with appropriate instruction and feedback; formative assessment is a teaching tool, not merely a measurement device.',
+    keyTerms:['Bloom\'s Taxonomy (Remember, Understand, Apply, Analyse, Evaluate, Create)','Mastery learning','Formative assessment','2-Sigma problem','Cognitive domain'],
+    pairedWith:['Vygotsky','Hattie','Kirschner','Skinner'],
+    influenced:['hattie'],
+    stillDebated:true,
+    face:{bg:'#1A2A3A', skin:'#E0B880', hair:'#8a7060', hairType:'bald', beard:null, glasses:'rect'}
+  },
+  {
+    id:'bruner', name:'Jerome Bruner', dates:'1915–2016', year:1915, side:'right',
+    origin:'USA',
+    themes:['constructivist','cognitivist'],
+    summary:'Bruner bridged Piaget and Vygotsky and brought cognitive psychology into education. His two most influential ideas: the spiral curriculum — return to key concepts with increasing complexity at each stage — and the idea that narrative is the fundamental mode of human meaning-making.',
+    impact:'The spiral curriculum reshaped how subjects are organised. His emphasis on discovery learning influenced progressive education globally. His later work on narrative changed how we understand learning, culture, and schooling. He was productive into his nineties.',
+    implications:'Revisit core concepts at increasing levels of complexity; discovery learning builds genuine understanding; narrative is a natural learning mode that should be harnessed, not fought; culture shapes the mind — teaching is always a cultural act.',
+    keyTerms:['Spiral curriculum','Discovery learning','Scaffolding','Narrative','The Process of Education','Acts of Meaning','Enactive-Iconic-Symbolic representation'],
+    pairedWith:['Piaget','Vygotsky','Dewey','Hirsch'],
+    influenced:[],
+    stillDebated:false,
+    face:{bg:'#1A3A3A', skin:'#E0B880', hair:'#8a7060', hairType:'bald', beard:null, glasses:'round'}
+  },
+  {
+    id:'freire', name:'Paulo Freire', dates:'1921–1997', year:1921, side:'left',
+    origin:'Brazil',
+    themes:['critical','social-learning','humanist'],
+    summary:'Freire\'s Pedagogy of the Oppressed is the most cited education text in the world. His "banking model" critique — that traditional education deposits knowledge in passive students — remains one of the most powerful metaphors in educational thought. Education, for Freire, must be a practice of liberation.',
+    impact:'Transformed adult literacy education, founded critical pedagogy, influenced a generation of activist educators. Shaped curriculum theory across the Global South. His work linked education explicitly to politics, justice, and the reproduction of social inequality.',
+    implications:'Education is never politically neutral; it either reproduces or challenges power structures; students and teachers are co-investigators not passive recipients and dispensers; critical consciousness (conscientização) is a legitimate educational goal.',
+    keyTerms:['Banking model of education','Conscientização (critical consciousness)','Praxis (reflection + action)','Dialogue','Pedagogy of the Oppressed','Generative themes'],
+    pairedWith:['Dewey','hooks','Illich','Vygotsky'],
+    influenced:['hooks','illich'],
+    stillDebated:true,
+    face:{bg:'#2A1A1A', skin:'#C07840', hair:'#3a2818', hairType:'short', beard:'short', glasses:'round'}
+  },
+  {
+    id:'illich', name:'Ivan Illich', dates:'1926–2002', year:1926, side:'right',
+    origin:'Austria / Mexico',
+    themes:['critical','humanist'],
+    summary:'Illich\'s Deschooling Society argued that schools had become counterproductive — instilling dependency, credentialism, and passive consumption rather than genuine learning. He called for "learning webs" connecting learners directly with mentors, resources, and peers.',
+    impact:'A radical critique that influenced alternative education movements. His prediction of peer-to-peer learning networks uncannily anticipates the internet and MOOCs. His concept of "counterproductivity" — institutions undermining their own stated goals — remains analytically powerful.',
+    implications:'Institutions can systematically undermine the goals they claim to serve; informal and self-directed learning is more powerful than schools acknowledge; credentials often substitute for, rather than evidence, genuine competence.',
+    keyTerms:['Deschooling Society','Learning webs','Counterproductivity','Vernacular knowledge','Tools for Conviviality','Disabling professions'],
+    pairedWith:['Freire','Dewey','hooks'],
+    influenced:[],
+    stillDebated:true,
+    face:{bg:'#1A3A2A', skin:'#E0C090', hair:'#4a3020', hairType:'short', beard:null}
+  },
+  {
+    id:'hirsch', name:'E.D. Hirsch', dates:'b.1928', year:1928, side:'left',
+    origin:'USA',
+    themes:['direct-instruction'],
+    summary:'Hirsch argued in Cultural Literacy (1987) that there is a body of core knowledge that literate members of society share, and that failing to teach this explicitly to all students — especially disadvantaged ones — is a form of educational injustice. Background knowledge, not generic skills, drives reading comprehension.',
+    impact:'The Core Knowledge curriculum is used in hundreds of schools. His work profoundly influenced the knowledge-rich curriculum movement in England (the 2019 Ofsted framework is substantially Hirschian). His analysis of the Matthew Effect in education — the rich get richer — has proven highly influential.',
+    implications:'Background knowledge is the true foundation of literacy; the curriculum should be content-rich and coherent; skills cannot be taught in a knowledge vacuum; explicit knowledge transmission is an act of educational equity, not elitism.',
+    keyTerms:['Cultural Literacy','Core Knowledge','Background knowledge','Curriculum coherence','Matthew effect','Knowledge-rich curriculum','Reading comprehension'],
+    pairedWith:['Bruner','Kirschner','Hattie','Spencer'],
+    influenced:['kirschner'],
+    stillDebated:true,
+    face:{bg:'#2A2A1A', skin:'#E0B880', hair:'#c8c0a8', hairType:'short', beard:null, glasses:'rect'}
+  },
+  {
+    id:'noddings', name:'Nel Noddings', dates:'1929–2022', year:1929, side:'right',
+    origin:'USA',
+    themes:['humanist','critical'],
+    summary:'Noddings argued the purpose of education should be the development of caring, morally sensitive persons, not primarily academic achievement. Her ethics of care challenged the dominant achievement-focused, competitive model of schooling as both philosophically incomplete and humanly damaging.',
+    impact:'Centres care, relationship, and wellbeing in educational philosophy. Her work influenced approaches to pastoral care, teacher-student relationships, and the movement to take pupil happiness and moral development seriously as educational goals in their own right.',
+    implications:'Relationships are central to effective learning; the affective dimensions of schooling matter enormously; education should develop ethical sensitivity, not just academic skills; happiness in school is a legitimate and important goal.',
+    keyTerms:['Ethics of care','Caring relations','Engrossment and motivational displacement','Happiness and Education','Moral education','The Challenge to Care in Schools'],
+    pairedWith:['Wollstonecraft','hooks','Dewey','Froebel'],
+    influenced:[],
+    stillDebated:false,
+    face:{bg:'#3A1A3A', skin:'#E8C8A0', hair:'#c8b890', hairType:'short', beard:null, female:true}
+  },
+  {
+    id:'gardner', name:'Howard Gardner', dates:'b.1943', year:1943, side:'left',
+    origin:'USA',
+    themes:['cognitivist','humanist'],
+    summary:'Gardner\'s theory of Multiple Intelligences (1983) proposed that intelligence is not a single measurable quantity but a family of distinct abilities: linguistic, logical-mathematical, spatial, musical, bodily-kinaesthetic, interpersonal, intrapersonal, and naturalistic. Every person has a unique profile.',
+    impact:'Widely embraced by teachers seeking to recognise and value diverse student strengths. Also heavily critiqued by psychologists as lacking empirical support — the intelligences correlate with each other, suggesting a common factor rather than independent modules.',
+    implications:'Diverse learner strengths deserve recognition; teaching to different modalities may help some learners; but approach with caution — the theory\'s empirical foundations are contested and "learning styles" derived from it lack research support.',
+    keyTerms:['Multiple Intelligences (MI theory)','Frames of Mind','Project Zero','Linguistic/Logical/Spatial/Musical/Bodily/Interpersonal/Intrapersonal/Naturalistic intelligences'],
+    pairedWith:['Piaget','Vygotsky','Binet','Bruner'],
+    influenced:[],
+    stillDebated:true,
+    face:{bg:'#1A2A3A', skin:'#E0B880', hair:'#8a7060', hairType:'short', beard:null}
+  },
+  {
+    id:'hooks', name:'bell hooks', dates:'1952–2021', year:1952, side:'right',
+    origin:'USA',
+    themes:['critical','humanist'],
+    summary:'hooks extended Freire\'s critical pedagogy with feminist and anti-racist analysis. Her "engaged pedagogy" demanded teachers bring their whole selves to education, that classrooms become sites of collective liberation, and that learning be joyful rather than merely earnest.',
+    impact:'A central figure in critical pedagogy and the scholarship of teaching. Teaching to Transgress (1994) is widely read in teacher education programmes globally. She insisted that the personal is pedagogical and that the teacher\'s own self-actualisation is prerequisite for transformative teaching.',
+    implications:'The classroom is an inherently political space; teachers must model the self-actualisation they seek to inspire; students\' voices and lived experiences are legitimate sources of knowledge; education should be joyful, embodied, and transformative.',
+    keyTerms:['Engaged pedagogy','Teaching to Transgress','Critical consciousness','Feminist pedagogy','Embodied knowing','Eros and education'],
+    pairedWith:['Freire','Noddings','Wollstonecraft','Dewey'],
+    influenced:[],
+    stillDebated:false,
+    face:{bg:'#1A1A1A', skin:'#7A4A28', hair:'#1a1010', hairType:'curly', beard:null, female:true}
+  },
+  {
+    id:'hattie', name:'John Hattie', dates:'b.1950', year:1950, side:'left',
+    origin:'New Zealand / Australia',
+    themes:['cognitivist','direct-instruction'],
+    summary:'Hattie\'s Visible Learning (2009) synthesised over 800 meta-analyses covering tens of millions of students to rank educational influences by effect size. He found that feedback, teacher quality, teacher clarity, and formative assessment are among the most powerful influences on achievement.',
+    impact:'The most cited education researcher of the early 21st century. Visible Learning became the framework for evidence-based school improvement worldwide. His work forced educators to ask: do we have evidence that what we do actually works?',
+    implications:'Evidence should guide teaching decisions; feedback is the single most powerful lever for improvement; not all educational innovations improve learning and some harm it; making learning visible — to teachers and students — is transformative.',
+    keyTerms:['Visible Learning','Effect size','Meta-analysis','Feedback','Teacher clarity','Self-reported grades','Formative evaluation'],
+    pairedWith:['Bloom','Kirschner','Hirsch','Vygotsky'],
+    influenced:[],
+    stillDebated:true,
+    face:{bg:'#2A2A2A', skin:'#E0B880', hair:'#6a5040', hairType:'short', beard:null}
+  },
+  {
+    id:'kirschner', name:'Paul Kirschner', dates:'b.1952', year:1953, side:'right',
+    origin:'Netherlands',
+    themes:['cognitivist','direct-instruction'],
+    summary:'Kirschner\'s work on cognitive load theory and its implications for instructional design has been highly influential. His 2006 paper "Why Minimal Guidance During Instruction Does Not Work" (with Sweller and Clark) challenged discovery and inquiry-based learning with strong empirical evidence.',
+    impact:'Brought cognitive load theory into mainstream instructional design; provided the evidence base for explicit instruction; directly challenged constructivist orthodoxy in educational research. His work on misconceptions of learning (e.g. learning styles) has shaped teacher training.',
+    implications:'Working memory is severely limited — instructional design must respect this; novice learners need explicit guidance, not unstructured discovery; prior knowledge determines what instruction is appropriate; there is no single learning style — everyone learns from well-designed instruction.',
+    keyTerms:['Cognitive load theory','Worked examples','Explicit instruction','Why Minimal Guidance Does Not Work','Desirable difficulties','Sweller-Clark-Kirschner paper'],
+    pairedWith:['Hattie','Hirsch','Bloom','Sweller'],
+    influenced:[],
+    stillDebated:true,
+    face:{bg:'#2A1A2A', skin:'#E0B880', hair:'#2a2018', hairType:'short', beard:null, glasses:'small'}
+  },
+  {
+    id:'ibn-sina', name:'Ibn Sina (Avicenna)', dates:'980–1037', year:980, side:'right',
+    origin:'Persia (modern Iran)',
+    themes:['philosophical','humanist'],
+    summary:'Ibn Sina was the foremost philosopher and physician of the Islamic Golden Age. His educational writing, embedded in encyclopaedic works like the Kitab al-Shifa, argued that education must match the child\'s developmental stage, move from concrete to abstract, and cultivate both reason and moral character in parallel.',
+    impact:'His Canon of Medicine remained a standard text in European universities until the 17th century. His philosophical psychology — a sophisticated account of intellect, perception, and learning — influenced Aquinas, Albertus Magnus, and European scholasticism. He represents the high-water mark of Islamic educational philosophy.',
+    implications:'Learning should progress developmentally from simple to complex; education must address the whole person — body, mind and character; rote learning without understanding is insufficient; the social environment actively shapes the developing intellect.',
+    keyTerms:['Kitab al-Shifa (Book of Healing)','Canon of Medicine','Floating Man thought experiment','Active intellect','Islamic Golden Age philosophy','Peripatetic psychology'],
+    pairedWith:['aristotle','ibn-rushd','aquinas','ibn-khaldun'],
+    influenced:['ibn-rushd'],
+    stillDebated:false,
+    face:{bg:'#3A2A1A', skin:'#B07840', hair:'#1a1010', hairType:'short', beard:'short'}
+  },
+  {
+    id:'montaigne', name:'Michel de Montaigne', dates:'1533–1592', year:1533, side:'right',
+    origin:'France',
+    themes:['humanist','philosophical'],
+    summary:'Montaigne\'s Essays contain some of the most radical educational ideas of the Renaissance. He argued fiercely against rote memorisation and pedantry, insisting education should produce a well-formed rather than a well-filled head — developing judgement, curiosity and character rather than accumulating facts that sit inert in the mind.',
+    impact:'Influenced Locke, Rousseau, and the entire humanist tradition that followed. His insistence on learning through experience and dialogue, respect for the child\'s natural pace, and critique of book-learning without understanding anticipates progressive education by two centuries. Every major early modern educator read him.',
+    implications:'The goal of education is a well-formed mind, not a well-stocked memory; experience and conversation are as educative as books; teaching should provoke judgement, not mere compliance; each child learns differently and the teacher must meet them where they are.',
+    keyTerms:['Essays (Essais)','Well-made head vs well-filled head','Judgement over memory','Learning through experience','Sceptical humanism','Dialogue as pedagogy'],
+    pairedWith:['erasmus','locke','rousseau','dewey'],
+    influenced:['locke','rousseau'],
+    stillDebated:false,
+    face:{bg:'#4A3A1A', skin:'#D4A070', hair:'#5a4030', hairType:'short', beard:'goatee'}
+  },
+  {
+    id:'owen', name:'Robert Owen', dates:'1771–1858', year:1771, side:'left',
+    origin:'Wales / Scotland',
+    themes:['humanist','social-learning'],
+    summary:'Owen was the first industrialist to argue that human character is formed entirely by environment — and to act on that belief at scale. At New Lanark, he created the first infant school in Britain and established that well-educated, well-treated children grew into more capable, humane adults. He refused to employ children under ten.',
+    impact:'New Lanark became the most visited social experiment in Europe, attracting reformers from across the world. His infant schools spread across Britain and the United States. He demonstrated empirically that investment in education produced better workers and more cohesive communities — a foundational argument for public education.',
+    implications:'Environment is the primary determinant of character; early childhood education is an investment, not a luxury; education and social reform are inseparable; happy, secure children learn better than frightened or exhausted ones; the conditions of learning matter as much as its content.',
+    keyTerms:['New Lanark','Infant school movement','A New View of Society','Character formation by environment','Utopian socialism','Industrial welfare reform'],
+    pairedWith:['pestalozzi','herbart','mann','dewey'],
+    influenced:['mann'],
+    stillDebated:false,
+    face:{bg:'#2A3A2A', skin:'#E0B880', hair:'#4a3020', hairType:'short', beard:'trim'}
+  },
+  {
+    id:'herbart', name:'Johann Herbart', dates:'1776–1841', year:1776, side:'right',
+    origin:'Germany',
+    themes:['philosophical','cognitivist','direct-instruction'],
+    summary:'Herbart created the first systematic educational psychology and the first scientific theory of instruction. His concept of apperception — that new learning must connect to existing mental structures — anticipates cognitive psychology by a full century. His five formal steps of teaching (preparation, presentation, association, systematisation, application) shaped teacher training globally for decades.',
+    impact:'The most influential educational theorist of the 19th century that most educators have never heard of. His ideas spread through every European and American teacher training institution, creating the first systematic pedagogy. Dewey explicitly positioned his own philosophy against Herbart — which shows precisely how dominant Herbart had been.',
+    implications:'Instruction must begin by connecting new material to what learners already know; motivation follows well-sequenced teaching, not only from children\'s spontaneous interest; the teacher\'s role is active and structured; good instruction follows a deliberate sequence; character formation is the ultimate aim of all education.',
+    keyTerms:['Apperception','Five formal steps of instruction','Pedagogical tact','Interest as educational aim','General Pedagogy (1806)','Herbartian pedagogy'],
+    pairedWith:['pestalozzi','dewey','ausubel','piaget'],
+    influenced:['dewey','ausubel'],
+    stillDebated:false,
+    face:{bg:'#1A2A3A', skin:'#E0B880', hair:'#3a2820', hairType:'short', beard:null}
+  },
+  {
+    id:'mann', name:'Horace Mann', dates:'1796–1859', year:1796, side:'left',
+    origin:'USA',
+    themes:['humanist','direct-instruction'],
+    summary:'As the first Secretary of the Massachusetts Board of Education, Mann built the American public school system almost single-handedly. After studying Prussian schools in person, he championed teacher training colleges, graded classrooms, and the common school — free, universal, non-sectarian — as the indispensable foundation of democratic society.',
+    impact:'His twelve Annual Reports on Education are the founding documents of American public schooling. The common school movement he led created the template for universal tax-funded education that spread across the United States and influenced systems globally. He established that public education is not charity but a democratic imperative.',
+    implications:'Public education is the great equaliser of social conditions; teacher training is non-negotiable for a quality system; schools must serve all children regardless of background or means; a democratic society requires educated citizens capable of self-governance.',
+    keyTerms:['Common school','Normal schools (teacher training)','Annual Reports on Education','Universal public education','Massachusetts Board of Education','Education as democratic foundation'],
+    pairedWith:['owen','dewey','pestalozzi','wollstonecraft'],
+    influenced:[],
+    stillDebated:false,
+    face:{bg:'#1A1A2A', skin:'#E0B880', hair:'#6a5040', hairType:'short', beard:null}
+  },
+  {
+    id:'arnold', name:'Matthew Arnold', dates:'1822–1888', year:1822, side:'right',
+    origin:'England',
+    themes:['humanist','direct-instruction','philosophical'],
+    summary:'Arnold was simultaneously a major poet, a school inspector for thirty-five years, and the Victorian era\'s most forceful advocate for culture as education\'s highest aim. His phrase "the best that has been thought and said" defined a tradition of liberal education centred on the Western canon that both inspires and provokes to this day.',
+    impact:'Directly prefigures Hirsch\'s cultural literacy argument by a century. His unsparing HMI reports assessed English schooling with remarkable rigour. Culture and Anarchy established the case that education must transmit civilisational knowledge rather than merely providing practical skills — a debate that continues live in curriculum policy today.',
+    implications:'The curriculum should transmit the best of human thought and culture; education without cultural content produces capable but rootless people; state schooling has a civilising and democratising mission; to broaden access to culture is an act of social justice, not elitism.',
+    keyTerms:['"The best that has been thought and said"','Culture and Anarchy (1869)','HMI (Her Majesty\'s Inspector)','Sweetness and Light','Liberal education','Cultural transmission'],
+    pairedWith:['hirsch','erasmus','dewey','mason'],
+    influenced:['hirsch'],
+    stillDebated:true,
+    face:{bg:'#2A1A2A', skin:'#E0B880', hair:'#4a3020', hairType:'short', beard:'short'}
+  },
+  {
+    id:'cooper', name:'Anna Julia Cooper', dates:'1858–1964', year:1858, side:'right',
+    origin:'USA',
+    themes:['critical','humanist'],
+    summary:'Born enslaved, Cooper became one of the first Black women to earn a doctorate (Paris, 1925, at the age of 67). Her A Voice from the South (1892) argued with devastating clarity that the education of Black women was the linchpin of Black liberation — and that no community rises higher than its women are educated.',
+    impact:'A foundational text of Black feminist thought and the sociology of education. She showed that debates about education cannot be separated from questions of race, gender, and power. Her life — still teaching at ninety — was itself a sustained argument against every limit placed on Black educational aspiration. Widely overlooked until late in the 20th century.',
+    implications:'Education is inseparable from questions of race, gender, and social justice; who is included in or excluded from the curriculum reflects and reproduces power; educating marginalised groups benefits the whole of society; lived experience is a legitimate source of educational knowledge.',
+    keyTerms:['A Voice from the South (1892)','Black feminist pedagogy','Education and liberation','Womanist thought','Intersectionality (proto-)','The educated Black woman'],
+    pairedWith:['wollstonecraft','hooks','freire','ambedkar'],
+    influenced:['hooks'],
+    stillDebated:false,
+    face:{bg:'#1A1010', skin:'#7A4A28', hair:'#1a1010', hairType:'bun', beard:null, female:true}
+  },
+  {
+    id:'steiner', name:'Rudolf Steiner', dates:'1861–1925', year:1861, side:'left',
+    origin:'Austria',
+    themes:['humanist','constructivist'],
+    summary:'Steiner developed Waldorf education from the conviction that child development passes through distinct seven-year phases, each requiring a fundamentally different educational approach. Artistic, practical, and intellectual development must be integrated throughout; the imagination must be fully developed before the intellect is formally engaged.',
+    impact:'Waldorf education is one of the largest and most geographically widespread alternative school movements in the world, with thousands of schools on every continent. His insistence on art, craft, movement, and storytelling alongside academic subjects continues to challenge narrowly cognitive models of education.',
+    implications:'Developmental stages must determine curriculum and pedagogy; arts and crafts are educationally essential, not mere enrichment; learning should engage imagination before demanding abstract analysis; the sustained teacher-class relationship builds the deep trust that enables genuine intellectual risk.',
+    keyTerms:['Waldorf education','Anthroposophy','Seven-year developmental phases','Eurythmy','The First Waldorf School (Stuttgart, 1919)','Form drawing'],
+    pairedWith:['froebel','montessori','dewey','piaget'],
+    influenced:[],
+    stillDebated:true,
+    face:{bg:'#2A2A3A', skin:'#E0C090', hair:'#8a7060', hairType:'bald', beard:null}
+  },
+  {
+    id:'tagore', name:'Rabindranath Tagore', dates:'1861–1941', year:1862, side:'right',
+    origin:'India (Bengal)',
+    themes:['humanist','constructivist'],
+    summary:'Nobel laureate, poet, and educator, Tagore founded Shantiniketan (Abode of Peace) as a radical experiment in education conducted under the open sky, rooted in Indian philosophical traditions, the arts, and direct engagement with nature. He argued that colonial schooling killed creative and spiritual life, and that genuine education must cultivate the whole person within their own cultural context.',
+    impact:'Shantiniketan became Visva-Bharati University, a living experiment that influenced educators from Dewey (who visited in 1924) to Amartya Sen. His critique of colonial education as cultural violence directly prefigures Freire\'s analysis and provides a specifically South Asian philosophical framework for educational liberation.',
+    implications:'Education must be rooted in cultural context, not imposed from outside it; the arts and nature are essential educational environments, not luxuries; joy and creativity are signs of genuine learning; colonial systems of education can do active and lasting cultural harm.',
+    keyTerms:['Shantiniketan (Abode of Peace)','Visva-Bharati University','Education in nature','Creative self-expression','Critique of colonial education','Education and cultural identity'],
+    pairedWith:['dewey','montessori','freire','steiner'],
+    influenced:[],
+    stillDebated:false,
+    face:{bg:'#3A2A1A', skin:'#C07840', hair:'#2a1810', hairType:'long', beard:'long'}
+  },
+  {
+    id:'isaacs', name:'Susan Isaacs', dates:'1885–1948', year:1885, side:'left',
+    origin:'England',
+    themes:['humanist','constructivist'],
+    summary:'Isaacs ran the Malting House School in Cambridge (1924–27), keeping meticulous daily records of children\'s intellectual and social development that directly challenged Piaget\'s stage theory — she consistently found children capable of logical thought considerably earlier than he claimed. She also pioneered psychoanalytic approaches to understanding children\'s emotional lives in school.',
+    impact:'Her two landmark books — Intellectual Growth in Young Children and Social Development in Young Children — are primary research documents of extraordinary richness. She founded the Department of Child Development at the Institute of Education, London, training a generation of early childhood researchers. Piaget himself acknowledged the challenge her data posed.',
+    implications:'Children\'s intellectual capabilities are routinely underestimated; emotional security and intellectual development are inseparable in young children; careful, systematic observation is the proper foundation of educational research; play is the medium through which young children work through both concepts and feelings.',
+    keyTerms:['Malting House School','Intellectual Growth in Young Children','Social Development in Young Children','Developmental observation','Psychoanalysis and education','Critique of Piaget\'s stages'],
+    pairedWith:['piaget','froebel','montessori','vygotsky'],
+    influenced:[],
+    stillDebated:false,
+    face:{bg:'#3A1A3A', skin:'#E8C8A0', hair:'#5a4030', hairType:'bun', beard:null, female:true}
+  },
+  {
+    id:'gramsci', name:'Antonio Gramsci', dates:'1891–1937', year:1891, side:'right',
+    origin:'Italy',
+    themes:['critical','philosophical'],
+    summary:'Writing in Mussolini\'s prisons, Gramsci developed the concept of cultural hegemony — the way dominant groups maintain power not through force but through the ideas, values, and curriculum accepted as natural common sense. His concept of the organic intellectual challenged elite conceptions of educated leadership by arguing that every social group produces its own intellectuals.',
+    impact:'One of the most influential political philosophers of the 20th century. His analysis of how schooling reproduces hegemony is foundational for critical pedagogy, curriculum theory, and the sociology of education. Freire, hooks, and Giroux all draw extensively on Gramscian concepts.',
+    implications:'The curriculum is never politically neutral — it reflects the values of dominant culture; critical consciousness requires recognising and questioning ideas absorbed as natural through schooling; every person is an intellectual, though not everyone performs that function; education can be a site of resistance as well as social reproduction.',
+    keyTerms:['Cultural hegemony','Organic intellectual','Prison Notebooks','Counter-hegemony','Common sense vs good sense','Civil society and schooling'],
+    pairedWith:['freire','hooks','vygotsky','illich'],
+    influenced:['freire','hooks'],
+    stillDebated:true,
+    face:{bg:'#1A1A2A', skin:'#C89060', hair:'#1a1010', hairType:'short', beard:null, glasses:'round'}
+  },
+  {
+    id:'ambedkar', name:'B.R. Ambedkar', dates:'1891–1956', year:1892, side:'left',
+    origin:'India',
+    themes:['critical','humanist'],
+    summary:'Born into the lowest caste, Ambedkar became one of the most educated people of his generation — earning degrees from Columbia, the LSE, and the University of London — and used education as his primary weapon against caste oppression. He established schools and colleges for Dalits and argued that education was the only path to genuine liberation from the structures of caste.',
+    impact:'Architect of the Indian Constitution, which abolished untouchability and enshrined universal education. His philosophy connects individual intellectual development directly to collective liberation. Alongside Freire and Cooper, he represents the most rigorous tradition of education as social justice in practice.',
+    implications:'Education is the most powerful tool against social oppression; those denied education are denied full humanity; the curriculum must include the histories and contributions of all communities; literacy is a prerequisite for democratic participation and self-determination.',
+    keyTerms:['Education and caste liberation','Dalit education','Indian Constitution (Article 17)','Annihilation of Caste (1936)','Columbia and LSE education','Education as liberation'],
+    pairedWith:['freire','cooper','hooks','dewey'],
+    influenced:[],
+    stillDebated:false,
+    face:{bg:'#1A2A3A', skin:'#8A5830', hair:'#1a1010', hairType:'short', beard:null, glasses:'rect'}
+  },
+  {
+    id:'rogers', name:'Carl Rogers', dates:'1902–1987', year:1902, side:'right',
+    origin:'USA',
+    themes:['humanist'],
+    summary:'Rogers transferred his person-centred approach directly from psychotherapy into education. Genuine learning, he argued, is most powerful when self-initiated, personally meaningful, and occurs within a relationship of trust and unconditional positive regard. The teacher\'s proper role is not to instruct but to facilitate the conditions in which learning becomes possible.',
+    impact:'Freedom to Learn (1969) became a widely read manifesto for humanist education. His facilitative conditions — empathy, congruence, unconditional positive regard — shaped school counselling and the entire pastoral care tradition. He gave humanist education its most compelling psychological framework, rooted in decades of clinical evidence.',
+    implications:'The quality of the teacher-student relationship fundamentally determines the quality of learning; self-directed learning is deeper and more lasting than externally imposed learning; psychological safety is a prerequisite for intellectual risk-taking; the whole person, not just their cognition, comes to the learning encounter.',
+    keyTerms:['Person-centred education','Freedom to Learn (1969)','Facilitative conditions','Unconditional positive regard','Self-directed learning','Congruence and empathy'],
+    pairedWith:['dewey','noddings','froebel','maslow'],
+    influenced:[],
+    stillDebated:true,
+    face:{bg:'#1A3A2A', skin:'#E0B880', hair:'#c8b890', hairType:'short', beard:null, glasses:'round'}
+  },
+  {
+    id:'ausubel', name:'David Ausubel', dates:'1918–2008', year:1918, side:'left',
+    origin:'USA',
+    themes:['cognitivist'],
+    summary:'Ausubel\'s theory of meaningful learning argued that all new knowledge must be anchored to existing cognitive structures to be genuinely understood and retained. His concept of advance organisers — introductory frameworks that prepare the learner\'s existing knowledge to receive new information — gave teachers a practical and theoretically grounded instructional tool.',
+    impact:'His assertion that "the most important single factor influencing learning is what the learner already knows — ascertain this and teach accordingly" became the most cited sentence in educational psychology. His work provides the cognitive science foundation for Hirsch\'s background knowledge argument and connects directly to Vygotsky\'s zone of proximal development.',
+    implications:'Always assess and activate prior knowledge before introducing new concepts; use advance organisers to bridge from the known to the unknown; meaningful learning is fundamentally different from rote learning and far more durable; the organisation of knowledge in long-term memory matters as much as the knowledge itself.',
+    keyTerms:['Meaningful learning vs rote learning','Advance organisers','Assimilation theory','Cognitive structure','Subsumption theory','Educational Psychology: A Cognitive View (1968)'],
+    pairedWith:['herbart','vygotsky','hirsch','piaget'],
+    influenced:['hirsch'],
+    stillDebated:false,
+    face:{bg:'#2A1A3A', skin:'#E0B880', hair:'#5a4030', hairType:'short', beard:null, glasses:'rect'}
+  },
+  {
+    id:'nyerere', name:'Julius Nyerere', dates:'1922–1999', year:1922, side:'right',
+    origin:'Tanzania',
+    themes:['critical','humanist'],
+    summary:'As Tanzania\'s first president, Nyerere developed Education for Self-Reliance (1967) — a radical critique of colonial education as producing people fit for service in a foreign economy, and a vision of schooling rooted in African communal values, practical skills, and the equal dignity of manual and intellectual work.',
+    impact:'A foundational text of African educational philosophy and the global decolonisation-of-education debate. His Ujamaa philosophy connected schooling directly to community development. His critique of credential-chasing — education as a ladder that extracts individuals from their community rather than developing it — remains powerfully relevant.',
+    implications:'Education must serve the community it sits within, not extract talent from it; colonial curricula actively harm the cultures on which they are imposed; manual and intellectual work deserve equal dignity in the curriculum; education should build collective capacity, not merely individual advantage.',
+    keyTerms:['Education for Self-Reliance (1967)','Ujamaa (familyhood)','Decolonisation of education','African educational philosophy','Tanzania education reforms','Education and community'],
+    pairedWith:['freire','tagore','ambedkar','dewey'],
+    influenced:[],
+    stillDebated:false,
+    face:{bg:'#101010', skin:'#6A3A18', hair:'#1a1010', hairType:'short', beard:null}
+  },
+  {
+    id:'bandura', name:'Albert Bandura', dates:'1925–2021', year:1925, side:'left',
+    origin:'Canada / USA',
+    themes:['social-learning','cognitivist'],
+    summary:'Bandura\'s social learning theory demonstrated that people learn by observing others, not only through direct reinforcement — his famous Bobo doll experiment upended behaviourist orthodoxy. His concept of self-efficacy — a person\'s belief in their own capacity to succeed at a specific task — is one of the most powerful predictors of educational achievement ever identified.',
+    impact:'Social cognitive theory is among the most widely cited frameworks in educational psychology globally. Self-efficacy research transformed how teachers think about motivation, feedback, and the implicit messages in how they respond to student struggle. He directly influenced Carol Dweck\'s growth mindset research.',
+    implications:'Model the behaviours and dispositions you want students to develop — they are watching; cultivating self-efficacy is as important as teaching content; feedback should address strategy and effort, not fixed ability; students\' beliefs about their own capabilities profoundly shape their learning trajectories.',
+    keyTerms:['Social learning theory','Self-efficacy','Observational learning','Bobo doll experiment','Social cognitive theory','Vicarious reinforcement'],
+    pairedWith:['skinner','vygotsky','dweck','bloom'],
+    influenced:['dweck'],
+    stillDebated:false,
+    face:{bg:'#2A3A1A', skin:'#E0B880', hair:'#8a7060', hairType:'short', beard:null}
+  },
+  {
+    id:'bjork', name:'Robert Bjork', dates:'b.1939', year:1939, side:'right',
+    origin:'USA',
+    themes:['cognitivist'],
+    summary:'Bjork\'s research on human memory produced the concept of "desirable difficulties" — conditions that seem to impede learning in the short term but produce dramatically stronger and more transferable long-term retention. Spacing, interleaving, and retrieval practice are the most robust findings from his programme of research, and all are counterintuitive to how students naturally study.',
+    impact:'The empirical backbone of evidence-based teaching. His work gave scientific rigour to practices that feel uncomfortable — testing yourself rather than re-reading, spacing study sessions rather than cramming, mixing topics rather than blocking them. Research built on explicitly by Kirschner, Willingham, Wiliam, and the cognitive science of education movement.',
+    implications:'Fluency during learning is not a reliable indicator of long-term retention; spaced practice dramatically outperforms massed practice for retention; retrieval practice is one of the most powerful learning strategies available; interleaving builds transfer; the goal should be storage strength, not momentary retrieval ease.',
+    keyTerms:['Desirable difficulties','Spacing effect','Retrieval practice','Interleaving','Storage strength vs retrieval strength','New Theory of Disuse'],
+    pairedWith:['sweller','kirschner','willingham','hattie'],
+    influenced:['willingham','kirschner'],
+    stillDebated:false,
+    face:{bg:'#1A2A2A', skin:'#E0B880', hair:'#c8b890', hairType:'short', beard:null, glasses:'rect'}
+  },
+  {
+    id:'sweller', name:'John Sweller', dates:'b.1946', year:1946, side:'left',
+    origin:'Australia',
+    themes:['cognitivist','direct-instruction'],
+    summary:'Sweller developed cognitive load theory, one of the most directly applicable frameworks in instructional design. Working memory is severely and non-negotiably limited — instruction must be designed to minimise unnecessary cognitive load and maximise the transfer of knowledge to long-term memory. Worked examples are typically more effective for novice learners than open-ended problem solving.',
+    impact:'Cognitive load theory has generated hundreds of empirical studies with direct classroom implications. The Sweller-Clark-Kirschner paper (2006) provided the most rigorous empirical challenge to minimal guidance teaching yet published. His framework underlies modern evidence-informed instructional design from worked examples to split-attention research.',
+    implications:'Design instruction to respect the severe limits of working memory; worked examples should precede problem-solving for novice learners; avoid split attention by integrating related text and diagrams; reduce extraneous load by removing seductive but irrelevant material; what works for novices may actively harm expert learners (expertise reversal effect).',
+    keyTerms:['Cognitive load theory','Working memory limitations','Intrinsic/Extraneous/Germane load','Worked examples effect','Expertise reversal effect','Split-attention effect'],
+    pairedWith:['kirschner','bjork','willingham','hattie'],
+    influenced:['kirschner'],
+    stillDebated:true,
+    face:{bg:'#2A1A1A', skin:'#E0B880', hair:'#8a7060', hairType:'bald', beard:null}
+  },
+  {
+    id:'dweck', name:'Carol Dweck', dates:'b.1946', year:1947, side:'right',
+    origin:'USA',
+    themes:['cognitivist','humanist'],
+    summary:'Dweck\'s research on implicit theories of intelligence showed that students who believe intelligence is fixed (entity theory) respond to failure very differently from those who believe it can be developed (incremental theory). Her concept of the growth mindset became one of the most widely applied — and debated — psychological findings in modern education.',
+    impact:'Growth mindset messaging has been adopted by schools worldwide. The evidence base for simple mindset interventions is more mixed than initial enthusiasm suggested, but the underlying principle — that beliefs about ability profoundly affect learning behaviour — is robustly supported and connects directly to Bandura\'s self-efficacy research.',
+    implications:'How teachers give praise matters enormously — praise effort and strategy, not ability; students\' beliefs about intelligence can be changed through deliberate instruction; creating a culture where struggle is reframed as learning is genuinely powerful; be wary of superficial "growth mindset" messaging without deeper cultural change.',
+    keyTerms:['Growth mindset vs fixed mindset','Mindset (2006)','Implicit theories of intelligence','Praise for effort vs ability','Incremental vs entity theory','"Not yet" feedback'],
+    pairedWith:['bandura','hattie','vygotsky','bloom'],
+    influenced:[],
+    stillDebated:true,
+    face:{bg:'#3A1A3A', skin:'#E8C8A0', hair:'#c8b890', hairType:'short', beard:null, female:true}
+  },
+  {
+    id:'wiliam', name:'Dylan Wiliam', dates:'b.1954', year:1954, side:'left',
+    origin:'Wales / UK',
+    themes:['cognitivist','direct-instruction'],
+    summary:'Wiliam\'s work with Paul Black produced Inside the Black Box (1998), the most influential policy document on formative assessment ever written in English. His subsequent research established that the quality of minute-by-minute classroom feedback — questioning, discussion, and checking for understanding — is the primary lever available to teachers for improving student learning.',
+    impact:'Transformed assessment practice in English-speaking education systems. His five key strategies of formative assessment are now central to teacher training globally. His argument that assessment should be primarily for learning, not of it, shifted how schools and inspectors think about what data to collect and how to use it.',
+    implications:'Formative assessment used well is the most powerful improvement strategy available to teachers; the quality of classroom questioning determines the quality of thinking; feedback should feed forward into future learning, not simply evaluate past work; students should be active agents in assessing their own progress.',
+    keyTerms:['Formative assessment','Inside the Black Box (1998)','Assessment for Learning','Five key strategies of formative assessment','Hinge questions','Embedded formative assessment'],
+    pairedWith:['bloom','hattie','bjork','kirschner'],
+    influenced:[],
+    stillDebated:false,
+    face:{bg:'#1A3A3A', skin:'#E0B880', hair:'#6a5040', hairType:'short', beard:'goatee', glasses:'rect'}
+  },
+  {
+    id:'willingham', name:'Daniel Willingham', dates:'b.1961', year:1961, side:'right',
+    origin:'USA',
+    themes:['cognitivist','direct-instruction'],
+    summary:'Willingham translated cognitive science research into direct classroom implications through Why Don\'t Students Like School? (2009). His central argument: the brain is not designed for thinking — it is designed to avoid it. Genuine understanding depends on background knowledge, and schools systematically underestimate how much students need to know in order to think well about anything.',
+    impact:'One of the most widely read bridges between educational research and classroom practice. His writing on reading comprehension, background knowledge, and the debunking of learning styles has shaped teacher professional development globally. He provides the cognitive science foundation for the knowledge-rich curriculum argument.',
+    implications:'Background knowledge is not separate from thinking skills — it is what makes them possible; students must know a great deal before they can think critically about anything; practice makes knowledge automatic, freeing working memory for higher-order tasks; there is no credible evidence for learning styles.',
+    keyTerms:['Why Don\'t Students Like School? (2009)','Background knowledge and thinking','Cognitive science of education','Learning styles (no evidence)','Knowledge as the foundation of skill','The Reading Mind'],
+    pairedWith:['hirsch','kirschner','bjork','sweller'],
+    influenced:['christodoulou'],
+    stillDebated:false,
+    face:{bg:'#2A2A1A', skin:'#E0B880', hair:'#3a2820', hairType:'short', beard:null, glasses:'round'}
+  },
+  {
+    id:'christodoulou', name:'Daisy Christodoulou', dates:'b.1984', year:1984, side:'left',
+    origin:'England',
+    themes:['direct-instruction','cognitivist'],
+    summary:'Christodoulou\'s Seven Myths About Education (2013) applied cognitive science — particularly the work of Hirsch, Willingham, and Bjork — to directly challenge orthodoxies in English education: that skills can be taught without knowledge, that memorisation is harmful, that every child learns differently, and that a good lesson involves minimal teacher talk.',
+    impact:'Had remarkable real-world policy impact for a first book, contributing directly to curriculum debates in England and the subsequent shift toward knowledge-rich curricula in the 2019 Ofsted framework. Her subsequent work on assessment, Making Good Progress, argues with equal rigour that comparative judgement is needed for formative assessment to function properly.',
+    implications:'Many widely held teaching beliefs are not only unsupported by evidence but actively harmful to students; factual knowledge and memorisation are preconditions for higher-order thinking, not obstacles to it; teachers should often speak more, not less; valid assessment requires careful attention to what comparisons are actually being made.',
+    keyTerms:['Seven Myths About Education (2013)','Knowledge-rich curriculum','Making Good Progress','Comparative judgement','Cognitive science applied to schools','The knowledge vs skills debate'],
+    pairedWith:['hirsch','willingham','wiliam','kirschner'],
+    influenced:[],
+    stillDebated:true,
+    face:{bg:'#1A2A3A', skin:'#E8C8A0', hair:'#6a5040', hairType:'short', beard:null, female:true}
+  },
+  {
+    id:'humboldt', name:'Wilhelm von Humboldt', dates:'1767–1835', year:1767, side:'right',
+    origin:'Prussia (Germany)',
+    themes:['philosophical','humanist'],
+    summary:'Humboldt founded the University of Berlin in 1810 and in doing so invented the modern research university. His concept of Wissenschaft — the unity of teaching and research — held that universities should not merely transmit received knowledge but actively produce new knowledge, with students as partners in genuine inquiry rather than passive recipients of established facts.',
+    impact:'The Humboldtian model became the template for virtually every research university in the world. Academic freedom, the inseparability of teaching and research, and the idea that universities serve truth rather than the state or the market all trace directly to his vision. American research universities, the reform of Oxford and Cambridge, and the modern PhD all bear his imprint.',
+    implications:'Universities must unite teaching and research — the scholar who does not research grows stale, the researcher who does not teach loses perspective; academic freedom is a prerequisite for genuine knowledge production; education should form the whole person (Bildung), not merely train for a profession; the university answers to truth, not to utility or the market.',
+    keyTerms:['Wissenschaft (unity of teaching and research)','Bildung (self-formation through learning)','Humboldtian university model','Academic freedom (Lehrfreiheit/Lernfreiheit)','University of Berlin (1810)','Neo-humanism'],
+    pairedWith:['herbart','pestalozzi','dewey','arnold'],
+    influenced:['arnold','dewey'],
+    stillDebated:true,
+    face:{bg:'#1A2A3A', skin:'#E0B880', hair:'#c8b890', hairType:'wig', beard:null}
+  }
+];
+
+const MARKERS = [
+  {year:-3200, type:'invention', label:'Writing Invented', desc:'Cuneiform script in Mesopotamia and hieroglyphs in Egypt — the technology that made formal, transmittable knowledge possible.'},
+  {year:-2000, type:'institution', label:'Egyptian Scribal Schools', desc:'The "House of Life" (Per Ankh) trained scribes, priests, and administrators — among the earliest formal educational institutions.'},
+  {year:-387, type:'institution', label:"Plato's Academy Founded", desc:'The first institution of higher learning in the Western world, near Athens. It survived until 529 CE — nearly 900 years.'},
+  {year:105, type:'invention', label:'Paper Invented (China)', desc:'Cai Lun refines papermaking in China. Paper would eventually transform the accessibility of written knowledge globally.'},
+  {year:529, type:'period', label:'Justinian Closes Pagan Schools', desc:'Emperor Justinian closes the Platonic Academy in Athens, marking the end of classical pagan philosophy as an institutional force.'},
+  {year:830, type:'institution', label:'House of Wisdom, Baghdad', desc:'Bayt al-Hikmah: the great Islamic centre of learning that translated and extended Greek, Indian, and Persian knowledge, preserving it for the Renaissance.'},
+  {year:1088, type:'institution', label:'University of Bologna', desc:'The first university in the Western world. Paris (c.1150) and Oxford (c.1167) would follow, establishing the European university tradition.'},
+  {year:1440, type:'invention', label:"Gutenberg's Printing Press", desc:'The most disruptive educational technology before the internet. Books go from luxury items to accessible knowledge — the Reformation follows within decades.'},
+  {year:1687, type:'period', label:'The Scientific Revolution', desc:"Newton's Principia Mathematica crowns a century of scientific upheaval, establishing empirical, mathematical reason as the supreme form of knowledge."},
+  {year:1762, type:'publication', label:"Rousseau's Emile Published", desc:'Perhaps the most influential text in the history of educational thought. Rousseau imagines education as a process of natural unfolding rather than social imposition.'},
+  {year:1870, type:'institution', label:'Compulsory Schooling Begins', desc:'The UK Education Act (1870) establishes universal elementary education. Similar laws follow across Europe and North America — mass schooling becomes the norm.'},
+  {year:1879, type:'period', label:"Wundt's Psychology Laboratory", desc:'Wilhelm Wundt opens the first experimental psychology laboratory in Leipzig. The scientific study of mind and learning begins in earnest.'},
+  {year:1956, type:'period', label:'The Cognitive Revolution', desc:"Chomsky's review of Skinner, Miller's 'Magical Number Seven', and the birth of information processing theory. Mind re-enters psychology after decades of behaviourist exile."},
+  {year:1969, type:'invention', label:'Educational Television (Sesame Street)', desc:'Sesame Street demonstrates that carefully designed media can teach children at scale. The beginning of systematic educational technology research.'},
+  {year:1991, type:'invention', label:'The World Wide Web', desc:'Tim Berners-Lee invents the Web. Within two decades, all of human knowledge is theoretically accessible to anyone with a connection — transforming what schools are for.'},
+  {year:2022, type:'digital', label:'AI Enters Education (ChatGPT)', desc:'Large language models reach millions of users. The most fundamental challenge to traditional assessment and curriculum since the printing press is now underway.'}
+];
+
+const CONNECTIONS = [
+  {from:'socrates', to:'plato', type:'taught'},
+  {from:'plato', to:'aristotle', type:'taught'},
+  {from:'locke', to:'rousseau', type:'influenced'},
+  {from:'rousseau', to:'pestalozzi', type:'influenced'},
+  {from:'pestalozzi', to:'froebel', type:'influenced'},
+  {from:'froebel', to:'montessori', type:'influenced'},
+  {from:'rousseau', to:'montessori', type:'influenced'},
+  {from:'james', to:'dewey', type:'influenced'},
+  {from:'pestalozzi', to:'dewey', type:'influenced'},
+  {from:'dewey', to:'bruner', type:'influenced'},
+  {from:'piaget', to:'bruner', type:'influenced'},
+  {from:'vygotsky', to:'bruner', type:'influenced'},
+  {from:'binet', to:'piaget', type:'influenced'},
+  {from:'ibn-rushd', to:'aquinas', type:'influenced'},
+  {from:'quintilian', to:'erasmus', type:'influenced'},
+  {from:'erasmus', to:'comenius', type:'influenced'},
+  {from:'freire', to:'hooks', type:'influenced'},
+  {from:'skinner', to:'bloom', type:'influenced'},
+  {from:'hirsch', to:'kirschner', type:'influenced'},
+  {from:'piaget', to:'vygotsky', type:'critiqued'},
+  {from:'ibn-sina', to:'ibn-rushd', type:'influenced'},
+  {from:'montaigne', to:'locke', type:'influenced'},
+  {from:'montaigne', to:'rousseau', type:'influenced'},
+  {from:'herbart', to:'dewey', type:'influenced'},
+  {from:'herbart', to:'ausubel', type:'influenced'},
+  {from:'owen', to:'mann', type:'influenced'},
+  {from:'arnold', to:'hirsch', type:'influenced'},
+  {from:'cooper', to:'hooks', type:'influenced'},
+  {from:'gramsci', to:'freire', type:'influenced'},
+  {from:'gramsci', to:'hooks', type:'influenced'},
+  {from:'bandura', to:'dweck', type:'influenced'},
+  {from:'bjork', to:'willingham', type:'influenced'},
+  {from:'bjork', to:'kirschner', type:'influenced'},
+  {from:'sweller', to:'kirschner', type:'influenced'},
+  {from:'willingham', to:'christodoulou', type:'influenced'},
+  {from:'ausubel', to:'hirsch', type:'influenced'},
+  {from:'wiliam', to:'hattie', type:'influenced'},
+  {from:'isaacs', to:'piaget', type:'critiqued'},
+  {from:'humboldt', to:'arnold', type:'influenced'},
+  {from:'humboldt', to:'dewey', type:'influenced'}
+];
+
+// ═══════════════════════════════════════════════════════
+// RENDERING
+// ═══════════════════════════════════════════════════════
+const ERA_LABELS = [
+  {year:-3600, label:'The Ancient World'},
+  {year:-100, label:'Classical & Medieval'},
+  {year:1450, label:'Renaissance to Enlightenment'},
+  {year:1810, label:'The Nineteenth Century'},
+  {year:1895, label:'The Modern Era'},
+  {year:1940, label:'The Age of Educational Science'},
+  {year:2000, label:'The Contemporary Debate'}
+];
+
+function getAllItems() {
+  let items = [];
+  THINKERS.forEach(t => items.push({...t, kind:'thinker'}));
+  MARKERS.forEach(m => items.push({...m, kind:'marker'}));
+  ERA_LABELS.forEach(e => items.push({...e, kind:'era'}));
+  items.sort((a,b) => a.year - b.year);
+  return items;
+}
+
+function formatYear(y) {
+  if (y < 0) return `${Math.abs(y)} BCE`;
+  if (y < 100) return `c.${y} CE`;
+  return y < 1000 ? `c.${y}` : `${y}`;
+}
+
+function themeColor(t) {
+  return THEME_COLORS[t] || '#888';
+}
+
+function renderDetailCard(t) {
+  const flag = FLAGS[t.id] || '';
+  const themesBadges = t.themes.map(th =>
+    `<span class="detail-theme-badge" style="border-color:${themeColor(th)};color:${themeColor(th)}">${th.replace('-',' ')}</span>`
+  ).join('');
+
+  const keyTermsHtml = t.keyTerms.map(k =>
+    `<span class="key-term">${k}</span>`
+  ).join('');
+
+  const pairedHtml = t.pairedWith.map(p =>
+    `<span class="paired-chip">${p}</span>`
+  ).join('');
+
+  const debateHtml = t.stillDebated ?
+    `<div class="debate-flag">🔥 Still actively debated today</div>` : '';
+
+  return `
+    <div class="detail-card">
+      <div class="detail-name">${t.name}</div>
+      <div class="detail-meta">${t.dates} · ${flag} ${t.origin}</div>
+      <div class="detail-themes">${themesBadges}</div>
+
+      <div class="detail-section">
+        <div class="detail-section-label">Overview</div>
+        <div class="detail-text">${t.summary}</div>
+      </div>
+
+      <div class="detail-section">
+        <div class="detail-section-label">Impact</div>
+        <div class="detail-text">${t.impact}</div>
+      </div>
+
+      <div class="detail-section">
+        <div class="detail-section-label">Implications for Learning & Teaching</div>
+        <div class="detail-text">${t.implications}</div>
+      </div>
+
+      <div class="detail-section">
+        <div class="detail-section-label">Key Terms</div>
+        <div class="key-terms">${keyTermsHtml}</div>
+      </div>
+
+      ${t.pairedWith.length ? `
+      <div class="detail-section">
+        <div class="detail-section-label">Often Paired With</div>
+        <div class="paired-with">${pairedHtml}</div>
+      </div>` : ''}
+
+      ${debateHtml}
+    </div>
+  `;
+}
+
+function renderThinker(t) {
+  const themeDots = t.themes.map(th =>
+    `<div class="theme-dot" style="background:${themeColor(th)}" title="${th}"></div>`
+  ).join('');
+
+  const debateBadge = t.stillDebated ?
+    `<div class="debate-badge" title="Still actively debated">🔥</div>` : '';
+
+  const face = makeFace(t.face);
+
+  const flag = FLAGS[t.id] || '';
+
+  return `
+    <div class="thinker-entry ${t.side}" 
+         data-id="${t.id}" 
+         data-themes="${t.themes.join(' ')}"
+         data-year="${t.year}">
+      <div class="thinker-shrink">
+        <div class="thinker-card">
+          <div class="avatar-wrap">
+            <div class="caricature-wrap">${face}</div>
+            ${flag ? `<div class="flag-badge">${flag}</div>` : ''}
+          </div>
+          <div class="thinker-name">${t.name}</div>
+          <div class="thinker-dates">${t.dates}</div>
+          <div class="thinker-themes">${themeDots}</div>
+          ${debateBadge}
+        </div>
+      </div>
+      ${renderDetailCard(t)}
+    </div>
+  `;
+}
+
+function renderMarker(m) {
+  const typeMap = {
+    invention: {cls:'invention', icon:'⚙'},
+    institution: {cls:'institution', icon:'⬡'},
+    publication: {cls:'publication', icon:'✦'},
+    period: {cls:'period', icon:'◈'},
+    digital: {cls:'digital', icon:'◉'}
+  };
+  const t = typeMap[m.type] || {cls:'invention', icon:'·'};
+
+  return `
+    <div class="ctx-marker" data-year="${m.year}">
+      <div class="ctx-inner">
+        <div class="ctx-year">${formatYear(m.year)}</div>
+        <div class="ctx-dot ${t.cls}"></div>
+        <div class="ctx-label">${t.icon} ${m.label}</div>
+        <div class="ctx-desc">${m.desc}</div>
+      </div>
+    </div>
+  `;
+}
+
+function renderEra(e) {
+  return `<div class="era-label" data-year="${e.year}"><span>${e.label}</span></div>`;
+}
+
+function buildTimeline() {
+  const container = document.getElementById('timeline-content');
+  const items = getAllItems();
+  let html = '';
+  items.forEach(item => {
+    if (item.kind === 'thinker') html += renderThinker(item);
+    else if (item.kind === 'marker') html += renderMarker(item);
+    else html += renderEra(item);
+  });
+  container.innerHTML = html;
+}
+
+// ═══════════════════════════════════════════════════════
+// CONNECTION LINES
+// ═══════════════════════════════════════════════════════
+function drawConnections() {
+  const svg = document.getElementById('connections-svg');
+  const wrap = document.getElementById('timeline-wrap');
+  const wrapRect = wrap.getBoundingClientRect();
+  const wrapTop = wrapRect.top + window.scrollY;
+  const totalH = wrap.scrollHeight;
+  const W = wrapRect.width;
+  const centreX = W / 2;
+
+  // Build a map of thinker id → side and y-centre
+  const sideMap = {};
+  const nodeMap = {};
+  document.querySelectorAll('.thinker-entry').forEach(el => {
+    const id = el.dataset.id;
+    const rect = el.getBoundingClientRect();
+    const cy = rect.top + rect.height / 2 - wrapTop + window.scrollY;
+    sideMap[id] = el.classList.contains('left') ? 'left' : 'right';
+    nodeMap[id] = { cx: centreX, cy };
+  });
+
+  // Assign each connection deterministically to left or right side.
+  // Rule: if both thinkers share a side, curve to the OPPOSITE side
+  //       (into open space). If they differ, curve LEFT by default.
+  // Then stagger multiple connections sharing the same side by
+  // offsetting the bulge so they fan out rather than stack.
+  const sideCounts = { left: 0, right: 0 };
+
+  // Max bulge: keep curves inside the wrapper with generous margin
+  const MAX_BULGE = Math.min(W * 0.28, 240);
+  const BASE_BULGE = 55;
+
+  let paths = '';
+
+  CONNECTIONS.forEach(conn => {
+    const from = nodeMap[conn.from];
+    const to   = nodeMap[conn.to];
+    if (!from || !to) return;
+
+    const color = conn.type === 'taught'    ? '#c9a84c' :
+                  conn.type === 'critiqued' ? '#d85d6a' : '#5bbfad';
+
+    const fromSide = sideMap[conn.from] || 'left';
+    const toSide   = sideMap[conn.to]   || 'right';
+
+    // Decide which side of the centre line to bulge toward
+    let curveSide;
+    if (fromSide === toSide) {
+      // Both on the same side — curve away from them into open space
+      curveSide = fromSide === 'left' ? 1 : -1; // left thinkers → bulge right, right → bulge left
+    } else {
+      // Different sides — alternate left/right using running count
+      const lCount = sideCounts.left;
+      const rCount = sideCounts.right;
+      curveSide = lCount <= rCount ? -1 : 1;
+    }
+
+    // Track and stagger bulge so concurrent same-side curves fan out
+    const sideKey = curveSide === 1 ? 'right' : 'left';
+    const stagger = sideCounts[sideKey];
+    sideCounts[sideKey]++;
+
+    // Bulge scales with vertical distance, staggered, and strictly capped
+    const vertDist = Math.abs(to.cy - from.cy);
+    const rawBulge = BASE_BULGE + vertDist * 0.08 + stagger * 18;
+    const bulge = Math.min(rawBulge, MAX_BULGE);
+
+    const midY = (from.cy + to.cy) / 2;
+    const cpX  = centreX + curveSide * bulge;
+
+    // Clamp control point so it can never escape the wrapper
+    const clampedCpX = Math.max(8, Math.min(W - 8, cpX));
+
+    // Cubic Bézier: both control points at the same clamped x, mid y
+    const d = `M${centreX},${from.cy} C${clampedCpX},${midY} ${clampedCpX},${midY} ${centreX},${to.cy}`;
+
+    paths += `<path d="${d}" stroke="${color}" stroke-width="1.4" fill="none"
+      stroke-dasharray="5,4" opacity="0.6"/>`;
+
+    // Small arrowhead pointing straight down into destination dot
+    const arrowSize = 6;
+    const dir = to.cy > from.cy ? 1 : -1;
+    const ay  = to.cy - dir * arrowSize;
+    paths += `<polygon points="${centreX},${to.cy} ${centreX - 4},${ay} ${centreX + 4},${ay}"
+      fill="${color}" opacity="0.75"/>`;
+  });
+
+  svg.setAttribute('viewBox', `0 0 ${W} ${totalH}`);
+  svg.style.height = totalH + 'px';
+  svg.innerHTML = paths;
+}
+
+// ═══════════════════════════════════════════════════════
+// FILTERS
+// ═══════════════════════════════════════════════════════
+let activeThemes = new Set(Object.keys(THEME_COLORS));
+
+function applyFilters() {
+  document.querySelectorAll('.thinker-entry').forEach(el => {
+    const themes = el.dataset.themes.split(' ');
+    const match = themes.some(t => activeThemes.has(t));
+    el.classList.remove('dimmed','highlighted');
+    if (!match) el.classList.add('dimmed');
+  });
+  // Redraw connections after the collapse animation finishes
+  if (connectionsVisible) {
+    setTimeout(drawConnections, 420);
+  }
+}
+
+document.querySelectorAll('.theme-pill').forEach(pill => {
+  pill.addEventListener('click', () => {
+    const theme = pill.dataset.theme;
+    if (activeThemes.has(theme)) {
+      activeThemes.delete(theme);
+      pill.classList.remove('active');
+    } else {
+      activeThemes.add(theme);
+      pill.classList.add('active');
+    }
+    applyFilters();
+  });
+});
+
+document.getElementById('reset-filters').addEventListener('click', () => {
+  activeThemes = new Set(Object.keys(THEME_COLORS));
+  document.querySelectorAll('.theme-pill').forEach(p => p.classList.add('active'));
+  applyFilters();
+});
+
+let connectionsVisible = false;
+document.getElementById('toggle-connections').addEventListener('click', function() {
+  connectionsVisible = !connectionsVisible;
+  const svg = document.getElementById('connections-svg');
+  const legend = document.getElementById('conn-legend');
+  if (connectionsVisible) {
+    drawConnections();
+    svg.classList.add('visible');
+    legend.classList.add('visible');
+    this.classList.add('active');
+    this.textContent = '⤡ Hide Connections';
+  } else {
+    svg.classList.remove('visible');
+    legend.classList.remove('visible');
+    this.classList.remove('active');
+    this.textContent = '⤡ Show Connections';
+  }
+});
+
+// ═══════════════════════════════════════════════════════
+// SCROLL REVEAL
+// ═══════════════════════════════════════════════════════
+function setupScrollReveal() {
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry, i) => {
+      if (entry.isIntersecting) {
+        setTimeout(() => entry.target.classList.add('visible'), 60);
+        observer.unobserve(entry.target);
+      }
+    });
+  }, {threshold: 0.1, rootMargin: '0px 0px -40px 0px'});
+
+  document.querySelectorAll('.thinker-entry, .ctx-marker, .era-label').forEach(el => {
+    observer.observe(el);
+  });
+}
+
+// ═══════════════════════════════════════════════════════
+// CLICK TO OPEN / CLICK AWAY TO CLOSE
+// ═══════════════════════════════════════════════════════
+function setupClickCards() {
+  document.querySelectorAll('.thinker-card').forEach(card => {
+    card.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const entry = card.closest('.thinker-entry');
+      const isOpen = entry.classList.contains('card-open');
+      // Close all
+      document.querySelectorAll('.thinker-entry.card-open').forEach(el => el.classList.remove('card-open'));
+      // Toggle this one
+      if (!isOpen) entry.classList.add('card-open');
+    });
+  });
+
+  document.addEventListener('click', () => {
+    document.querySelectorAll('.thinker-entry.card-open').forEach(el => el.classList.remove('card-open'));
+  });
+}
+
+// ═══════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════
+buildTimeline();
+setupScrollReveal();
+setupClickCards();
+
+window.addEventListener('resize', () => {
+  if (connectionsVisible) drawConnections();
+});
+</script>
+</body>
+</html>
